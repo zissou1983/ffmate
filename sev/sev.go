@@ -10,6 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/welovemedia/ffmate/docs"
 	"github.com/welovemedia/ffmate/sev/metrics"
 	"github.com/welovemedia/ffmate/sev/validate"
 	"gorm.io/driver/sqlite"
@@ -38,7 +41,7 @@ type Sev struct {
 	ctx context.Context
 }
 
-func New(name string, version string, dbPath string, debug bool) *Sev {
+func New(name string, version string, dbPath string, debug bool, port uint) *Sev {
 	// setup logger
 	logger := logrus.New()
 	logger.SetLevel(logrus.InfoLevel)
@@ -48,6 +51,12 @@ func New(name string, version string, dbPath string, debug bool) *Sev {
 
 	// setup gin
 	gin.SetMode(gin.ReleaseMode)
+	ginInstance := gin.New()
+
+	// setup swagger
+	docs.SwaggerInfo.Version = version
+	docs.SwaggerInfo.Host += fmt.Sprintf(":%d", port)
+	ginInstance.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// seutp db
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
@@ -75,7 +84,7 @@ func New(name string, version string, dbPath string, debug bool) *Sev {
 
 		db: db,
 
-		gin:      gin.New(),
+		gin:      ginInstance,
 		validate: &validate.Validate{},
 
 		ctx: context.Background(),

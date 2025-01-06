@@ -15,6 +15,10 @@ mkdir+bin:
 build: mkdir+bin
 	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o _bin/darwin-arm64 main.go
 
+swagger:
+	swag fmt
+	swag init --outputTypes go
+
 update: build
 	rm -rf _update
 	go-selfupdate -o=_update/ffmate _bin/ $(version)

@@ -1,0 +1,236 @@
+basePath: /api/v1
+definitions:
+  dto.NewTask:
+    properties:
+      command:
+        type: string
+      inputFile:
+        type: string
+      outputFile:
+        type: string
+    type: object
+  dto.NewWebhook:
+    properties:
+      event:
+        $ref: '#/definitions/dto.WebhookEvent'
+      url:
+        type: string
+    type: object
+  dto.Task:
+    properties:
+      command:
+        type: string
+      createdAt:
+        type: string
+      inputFile:
+        type: string
+      outputFile:
+        type: string
+      progress:
+        type: number
+      status:
+        $ref: '#/definitions/dto.TaskStatus'
+      updatedAt:
+        type: string
+      uuid:
+        type: string
+    type: object
+  dto.TaskStatus:
+    enum:
+    - QUEUED
+    - RUNNING
+    - DONE_SUCCESSFUL
+    - DONE_ERROR
+    - DONE_CANCELED
+    type: string
+    x-enum-varnames:
+    - QUEUED
+    - RUNNING
+    - DONE_SUCCESSFUL
+    - DONE_ERROR
+    - DONE_CANCELED
+  dto.Version:
+    properties:
+      version:
+        type: string
+    type: object
+  dto.Webhook:
+    properties:
+      createdAt:
+        type: string
+      event:
+        $ref: '#/definitions/dto.WebhookEvent'
+      updatedAt:
+        type: string
+      url:
+        type: string
+      uuid:
+        type: string
+    type: object
+  dto.WebhookEvent:
+    enum:
+    - task.created
+    - task.status.updated
+    - webhook.created
+    - webhook.deleted
+    type: string
+    x-enum-varnames:
+    - TASK_CREATED
+    - TASK_STATUS_UPDATED
+    - WEBHOOK_CREATED
+    - WEBHOOK_DELETED
+host: localhost:3000
+info:
+  contact:
+    email: sev@welovemedia.io
+    name: We love media
+  description: A wrapper around ffmpeg
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: ffmate API
+  version: '{will be injected}'
+paths:
+  /tasks:
+    get:
+      description: List all existing tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Task'
+            type: array
+      summary: List all tasks
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Add a new tasks to the queue
+      parameters:
+      - description: new task
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewTask'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Task'
+      summary: Add a new task
+      tags:
+      - tasks
+  /tasks/{uuid}:
+    get:
+      description: Get a single task by its uuid
+      parameters:
+      - description: the tasks uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Task'
+      summary: Get single task
+      tags:
+      - tasks
+  /tasks/{uuid}/cancel:
+    patch:
+      description: Cancel a task by its uuid
+      parameters:
+      - description: the tasks uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Task'
+            type: array
+      summary: Cancel a task
+      tags:
+      - tasks
+  /version:
+    get:
+      description: Get ffmate version
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Version'
+      summary: Get ffmate version
+      tags:
+      - version
+  /webhook:
+    get:
+      description: List all existing webhooks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.Webhook'
+            type: array
+      summary: List all webhooks
+      tags:
+      - webhooks
+    post:
+      consumes:
+      - application/json
+      description: Add a new webhook for an event
+      parameters:
+      - description: new webhook
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewWebhook'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Webhook'
+      summary: Add a new webhook
+      tags:
+      - webhooks
+  /webhook/{uuid}:
+    delete:
+      description: Delete a webhook by its uuid
+      parameters:
+      - description: the webhooks uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a webhook
+      tags:
+      - webhooks
+swagger: "2.0"

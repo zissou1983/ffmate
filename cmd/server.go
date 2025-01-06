@@ -19,7 +19,7 @@ func init() {
 }
 
 func start(cmd *cobra.Command, args []string) {
-	s := sev.New("ffmate", appVersion, dbPath, debug)
+	s := sev.New("ffmate", appVersion, dbPath, debug, port)
 
 	s.RegisterSignalHook()
 

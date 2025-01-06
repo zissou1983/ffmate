@@ -25,6 +25,13 @@ func (c *WebhookController) Setup(s *sev.Sev) {
 	s.Gin().GET(c.Prefix+c.getEndpoint(), c.listWebhooks)
 }
 
+//	@Summary		Delete a webhook
+//	@Description	Delete a webhook by its uuid
+//	@Tags			webhooks
+//	@Param			uuid	path	string	true	"the webhooks uuid"
+//	@Produce		json
+//	@Success		204
+//	@Router			/webhook/{uuid} [delete]
 func (c *WebhookController) deleteWebhook(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	err := c.webhookService.DeleteWebhook(uuid)
@@ -37,6 +44,12 @@ func (c *WebhookController) deleteWebhook(gin *gin.Context) {
 	gin.AbortWithStatus(204)
 }
 
+//	@Summary		List all webhooks
+//	@Description	List all existing webhooks
+//	@Tags			webhooks
+//	@Produce		json
+//	@Success		200	{object}	[]dto.Webhook
+//	@Router			/webhook [get]
 func (c *WebhookController) listWebhooks(gin *gin.Context) {
 	webhooks, err := c.webhookService.ListWebhooks()
 	if err != nil {
@@ -53,6 +66,14 @@ func (c *WebhookController) listWebhooks(gin *gin.Context) {
 	gin.JSON(200, webhooksDTOs)
 }
 
+//	@Summary		Add a new webhook
+//	@Description	Add a new webhook for an event
+//	@Tags			webhooks
+//	@Accept			json
+//	@Param			request	body	dto.NewWebhook	true	"new webhook"
+//	@Produce		json
+//	@Success		200	{object}	dto.Webhook
+//	@Router			/webhook [post]
 func (c *WebhookController) addWebhook(gin *gin.Context) {
 	newWebhook := &dto.NewWebhook{}
 	c.sev.Validate().Bind(gin, newWebhook)
