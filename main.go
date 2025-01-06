@@ -18,8 +18,8 @@ var version string
 //	@contact.name	We love media
 //	@contact.email	sev@welovemedia.io
 
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+//	@license.name	MIT
+//	@license.url	https://en.wikipedia.org/wiki/MIT_License
 
 // @host		localhost
 // @BasePath	/api/v1
