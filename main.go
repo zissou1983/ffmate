@@ -21,8 +21,8 @@ var version string
 //	@license.name	MIT
 //	@license.url	https://en.wikipedia.org/wiki/MIT_License
 
-// @host		localhost
-// @BasePath	/api/v1
+//	@host		localhost
+//	@BasePath	/api/v1
 func main() {
 	docs.SwaggerInfo.Schemes = []string{"http"}
 

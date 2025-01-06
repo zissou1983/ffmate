@@ -101,7 +101,7 @@ func (c *TaskController) getTask(gin *gin.Context) {
 //	@Tags			tasks
 //	@Param			uuid	path	string	true	"the tasks uuid"
 //	@Produce		json
-//	@Success		200	{object}	[]dto.Task
+//	@Success		200	{object}	dto.Task
 //	@Router			/tasks/{uuid}/cancel [patch]
 func (c *TaskController) cancelTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")

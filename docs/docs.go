@@ -14,8 +14,8 @@ const docTemplate = `{
             "email": "sev@welovemedia.io"
         },
         "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "name": "MIT",
+            "url": "https://en.wikipedia.org/wiki/MIT_License"
         },
         "version": "{{.Version}}"
     },
@@ -129,10 +129,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.Task"
-                            }
+                            "$ref": "#/definitions/dto.Task"
                         }
                     }
                 }
