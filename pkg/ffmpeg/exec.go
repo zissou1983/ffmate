@@ -77,7 +77,7 @@ func Execute(request *ExceutionRequest, updateFunc func(progress float64)) error
 				duration = parseDuration(durationStr)
 			}
 			if progress := parseFFmpegOutput(line, duration); progress != nil {
-				request.Logger.Debugf("FFMPEG - progress: %+v (uuid: %s)\n", progress, request.Task.Uuid)
+				request.Logger.Debugf("FFMPEG - progress: %f %+v (uuid: %s)\n", progress.Time/duration*100, progress, request.Task.Uuid)
 				updateFunc(progress.Time / duration * 100)
 			}
 		}
