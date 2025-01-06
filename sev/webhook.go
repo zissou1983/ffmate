@@ -28,7 +28,7 @@ func (s *Sev) FireWebhook(webhook *model.Webhook, data interface{}) {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", webhook.Url, bytes.NewBuffer(b))
 	if err != nil {
-		s.Logger().Errorf("failed to create http request", err)
+		s.Logger().Errorf("failed to create http request: %s", err)
 		return
 	}
 	req.Header.Add("Content-Type", "application/json")
