@@ -32,13 +32,13 @@ func (c *PresetController) Setup(s *sev.Sev) {
 	s.Gin().GET(c.Prefix+c.getEndpoint(), c.listPresets)
 }
 
-// @Summary		Delete a preset
-// @Description	Delete a preset by its uuid
-// @Tags			presets
-// @Param			uuid	path	string	true	"the presets uuid"
-// @Produce		json
-// @Success		204
-// @Router			/presets/{uuid} [delete]
+// @Summary Delete a preset
+// @Description Delete a preset by its uuid
+// @Tags presets
+// @Param uuid path string true "the presets uuid"
+// @Produce json
+// @Success 204
+// @Router /presets/{uuid} [delete]
 func (c *PresetController) deletePreset(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	err := c.presetService.DeletePreset(uuid)
@@ -51,12 +51,12 @@ func (c *PresetController) deletePreset(gin *gin.Context) {
 	gin.AbortWithStatus(204)
 }
 
-// @Summary		List all presets
+// @Summary List all presets
 // @Description	List all existing presets
-// @Tags			presets
-// @Produce		json
-// @Success		200	{object}	[]dto.Preset
-// @Router			/presets [get]
+// @Tags presets
+// @Produce json
+// @Success 200 {object} []dto.Preset
+// @Router /presets [get]
 func (c *PresetController) listPresets(gin *gin.Context) {
 	presets, err := c.presetService.ListPresets()
 	if err != nil {
@@ -73,14 +73,14 @@ func (c *PresetController) listPresets(gin *gin.Context) {
 	gin.JSON(200, presetDTOs)
 }
 
-// @Summary		Add a new preset
+// @Summary Add a new preset
 // @Description	Add a new preset
-// @Tags			presets
-// @Accept			json
-// @Param			request	body	dto.NewPreset	true	"new preset"
-// @Produce		json
-// @Success		200	{object}	dto.Preset
-// @Router			/presets [post]
+// @Tags presets
+// @Accept json
+// @Param request body dto.NewPreset true "new preset"
+// @Produce json
+// @Success 200 {object} dto.Preset
+// @Router /presets [post]
 func (c *PresetController) addPreset(gin *gin.Context) {
 	newPreset := &dto.NewPreset{}
 	c.sev.Validate().Bind(gin, newPreset)

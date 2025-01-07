@@ -16,7 +16,6 @@ build: mkdir+bin
 	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o _bin/darwin-arm64 main.go
 
 swagger:
-	swag fmt
 	swag init --outputTypes go
 
 update: build
