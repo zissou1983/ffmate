@@ -35,7 +35,7 @@ func (q *Queue) Init() {
 			} else {
 				q.Sev.Logger().Debugf("QUEUE - maximum concurrent tasks reached (tasks: %d/%d)", runningTasks, q.MaxConcurrentTasks)
 			}
-			time.Sleep(1 * time.Second) // Delay of 1 second
+			time.Sleep(1 * time.Second)
 		}
 	}()
 }
@@ -48,12 +48,12 @@ func (q *Queue) processTask(task *model.Task) {
 	q.Sev.Logger().Infof("QUEUE - processing task (uuid: %s)", task.Uuid)
 
 	cmd := task.Command
-	err := ffmpeg.Execute(&ffmpeg.ExceutionRequest{Task: task, Command: cmd, InputFile: task.InputFile, OutputFile: task.OutputFile, Logger: q.Sev.Logger()}, func(progress float64) {
+	err := ffmpeg.Execute(&ffmpeg.ExecutionRequest{Task: task, Command: cmd, InputFile: task.InputFile, OutputFile: task.OutputFile, Logger: q.Sev.Logger()}, func(progress float64) {
 		q.TaskRepository.SetTaskProgress(task, progress)
 	})
 	if err != nil {
 		q.updateTaskStatus(task, dto.DONE_ERROR)
-		q.Sev.Logger().Warnf("QUEUE - task failed (uuid: %s): %v", task.Uuid, err)
+		q.Sev.Logger().Warnf("QUEUE - task failed (uuid: %s):\n%v", task.Uuid, err)
 		return
 	}
 

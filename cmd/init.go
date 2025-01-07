@@ -7,35 +7,31 @@ import (
 	"github.com/sanbornm/go-selfupdate/selfupdate"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/welovemedia/ffmate/pkg/config"
 )
 
-var port uint
-var dbPath string
-var debug bool
-var appVersion string
-var concurrentTasks uint
-var sendTelemetry bool
 var updater *selfupdate.Updater
 
 var rootCmd = &cobra.Command{
-	Use:               "ffmate",
-	Short:             "ffmate is a wrapper for ffmpeg",
-	Long:              "ffmate is a wrapper for ffmmpeg that adds a queue system on top of it",
-	DisableAutoGenTag: true,
-	CompletionOptions: cobra.CompletionOptions{},
+	Use:   "ffmate",
+	Short: "ffmate is a wrapper for ffmpeg",
+	Long:  "ffmate is a wrapper for ffmpeg that adds a queue system on top of it",
 }
 
-func Execute(args []string, version string) {
-	appVersion = version
-	rootCmd.PersistentFlags().StringVarP(&dbPath, "database", "", "db.sqlite", "the path do the database")
-	rootCmd.PersistentFlags().UintVarP(&port, "port", "p", 3000, "set the port for the server to run")
-	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "emable debugging")
-	rootCmd.PersistentFlags().UintVarP(&concurrentTasks, "max-concurrent-tasks", "m", 1, "define maximum concurrent running tasks")
-	rootCmd.PersistentFlags().BoolVarP(&sendTelemetry, "send-telemetry", "", true, "enable sending anonymous telemtry data")
+func init() {
+	rootCmd.PersistentFlags().BoolP("debug", "d", false, "enable debugging")
+	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+}
 
+func Execute(args []string) {
+	// unmarshal viper into config.Config
+	config.Init()
+
+	// parse cobra flags
 	rootCmd.ParseFlags(args)
 
-	if debug {
+	if config.Config().Debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/welovemedia/ffmate/pkg/config"
 	"github.com/welovemedia/ffmate/pkg/database/model"
 )
 
@@ -24,7 +25,7 @@ type FFmpegProgress struct {
 	Speed   string
 }
 
-type ExceutionRequest struct {
+type ExecutionRequest struct {
 	Task *model.Task
 
 	Command    string
@@ -34,7 +35,7 @@ type ExceutionRequest struct {
 	Logger *logrus.Logger
 }
 
-func evaluateWildcards(request *ExceutionRequest) {
+func evaluateWildcards(request *ExecutionRequest) {
 	request.Command = strings.ReplaceAll(request.Command, "${INPUT_FILE}", request.InputFile)
 	request.Command = strings.ReplaceAll(request.Command, "${OUTPUT_FILE}", request.OutputFile)
 
@@ -55,12 +56,12 @@ func evaluateWildcards(request *ExceutionRequest) {
 }
 
 // ExecuteFFmpeg runs the ffmpeg command, provides progress updates, and checks the result
-func Execute(request *ExceutionRequest, updateFunc func(progress float64)) error {
+func Execute(request *ExecutionRequest, updateFunc func(progress float64)) error {
 	evaluateWildcards(request)
 
 	args := strings.Split(request.Command, " ")
 	args = append(args, "-progress", "pipe:2")
-	cmd := exec.Command("ffmpeg", args...)
+	cmd := exec.Command(config.Config().FFMpeg, args...)
 
 	// Buffers for capturing full stderr
 	var stderrBuf bytes.Buffer

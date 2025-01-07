@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"os"
 
+	"github.com/spf13/viper"
 	"github.com/welovemedia/ffmate/cmd"
 	"github.com/welovemedia/ffmate/docs"
 )
@@ -21,10 +22,13 @@ var version string
 //	@license.name	MIT
 //	@license.url	https://en.wikipedia.org/wiki/MIT_License
 
-//	@host		localhost
-//	@BasePath	/api/v1
+// @host		localhost
+// @BasePath	/api/v1
 func main() {
+	viper.Set("appName", "ffmate")
+	viper.Set("appVersion", version)
+
 	docs.SwaggerInfo.Schemes = []string{"http"}
 
-	cmd.Execute(os.Args, version)
+	cmd.Execute(os.Args)
 }

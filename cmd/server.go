@@ -2,31 +2,48 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/welovemedia/ffmate/pkg"
+	"github.com/welovemedia/ffmate/pkg/config"
 	"github.com/welovemedia/ffmate/pkg/database/repository"
 	"github.com/welovemedia/ffmate/pkg/dto"
 	"github.com/welovemedia/ffmate/sev"
 )
 
-var serviceCmd = &cobra.Command{
+var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "start the server",
 	Run:   start,
 }
 
 func init() {
-	rootCmd.AddCommand(serviceCmd)
+	rootCmd.AddCommand(serverCmd)
+
+	serverCmd.PersistentFlags().StringP("ffmpeg", "f", "ffmpeg", "path to ffmpeg binary")
+	serverCmd.PersistentFlags().StringP("port", "p", "3000", "the port to listen ob")
+	serverCmd.PersistentFlags().StringP("database", "", "db.sqlite", "the path do the database")
+	serverCmd.PersistentFlags().UintP("max-concurrent-tasks", "m", 1, "define maximum concurrent running tasks")
+	serverCmd.PersistentFlags().BoolP("send-telemetry", "", true, "enable sending anonymous telemetry data")
+
+	viper.BindPFlag("ffmpeg", serverCmd.PersistentFlags().Lookup("ffmpeg"))
+	viper.BindPFlag("port", serverCmd.PersistentFlags().Lookup("port"))
+	viper.BindPFlag("database", serverCmd.PersistentFlags().Lookup("database"))
+	viper.BindPFlag("maxConcurrentTasks", serverCmd.PersistentFlags().Lookup("max-concurrent-tasks"))
+	viper.BindPFlag("send-telemetry", serverCmd.PersistentFlags().Lookup("send-telemetry"))
 }
 
 func start(cmd *cobra.Command, args []string) {
-	s := sev.New("ffmate", appVersion, dbPath, debug, port)
+	// unmarshal viper into config.Config
+	config.Init()
+
+	s := sev.New("ffmate", config.Config().AppVersion, config.Config().Database, config.Config().Debug, config.Config().Port)
 
 	s.RegisterSignalHook()
 
 	s.RegisterStartupHook(func(s *sev.Sev) {
-		s.Logger().Infof("server is listening on 0.0.0.0:%d", port)
+		s.Logger().Infof("server is listening on 0.0.0.0:%d", config.Config().Port)
 	})
-	if sendTelemetry {
+	if config.Config().SendTelemetry {
 		s.RegisterShutdownHook(func(s *sev.Sev) {
 			taskRepo := &repository.Task{DB: s.DB()}
 			webhookRepo := &repository.Webhook{DB: s.DB()}
@@ -52,14 +69,14 @@ func start(cmd *cobra.Command, args []string) {
 		})
 	}
 
-	pkg.Init(s, concurrentTasks)
+	pkg.Init(s, config.Config().MaxConcurrentTasks)
 
 	res, found, _ := updateAvailable()
 	if found {
-		s.Logger().Infof("found newer version %s (current: %s). Run '%s update' to update.", res, s.AppVersion(), s.AppName())
+		s.Logger().Infof("found newer version %s (current: %s). Run '%s update' to update.", res, config.Config().AppVersion, config.Config().AppName)
 	}
 
-	err := s.Start(port)
+	err := s.Start(config.Config().Port)
 	if err != nil {
 		s.Logger().Errorf("failed to start server: %s", err)
 	}

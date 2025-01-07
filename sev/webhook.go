@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/welovemedia/ffmate/pkg/config"
 	"github.com/welovemedia/ffmate/pkg/database/model"
 	"github.com/welovemedia/ffmate/pkg/dto"
 )
@@ -32,7 +33,7 @@ func (s *Sev) FireWebhook(webhook *model.Webhook, data interface{}) {
 		return
 	}
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("User-Agent", s.appName+"/"+s.appVersion)
+	req.Header.Add("User-Agent", config.Config().AppName+"/"+config.Config().AppVersion)
 
 	_, err = client.Do(req)
 	if err != nil {

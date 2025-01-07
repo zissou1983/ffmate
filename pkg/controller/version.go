@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/welovemedia/ffmate/pkg/config"
 	"github.com/welovemedia/ffmate/pkg/dto"
 	"github.com/welovemedia/ffmate/sev"
 )
@@ -17,14 +18,14 @@ func (v *VersionController) Setup(s *sev.Sev) {
 	s.Gin().GET(v.Prefix+v.getEndpoint(), v.getVersion)
 }
 
-//	@Summary		Get ffmate version
-//	@Description	Get ffmate version
-//	@Tags			version
-//	@Produce		json
-//	@Success		200	{object}	dto.Version
-//	@Router			/version [get]
+// @Summary		Get ffmate version
+// @Description	Get ffmate version
+// @Tags			version
+// @Produce		json
+// @Success		200	{object}	dto.Version
+// @Router			/version [get]
 func (v *VersionController) getVersion(gin *gin.Context) {
-	gin.JSON(200, &dto.Version{Version: v.sev.AppVersion()})
+	gin.JSON(200, &dto.Version{Version: config.Config().AppVersion})
 }
 
 func (v *VersionController) GetName() string {

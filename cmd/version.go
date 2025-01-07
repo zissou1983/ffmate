@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/welovemedia/ffmate/pkg/config"
 )
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "print version of ffmate",
+	Short: "print ffmate version",
 	Run:   version,
 }
 
@@ -17,5 +18,5 @@ func init() {
 }
 
 func version(cmd *cobra.Command, args []string) {
-	fmt.Printf("version: %s\n", appVersion)
+	fmt.Printf("version: %s\n", config.Config().AppVersion)
 }

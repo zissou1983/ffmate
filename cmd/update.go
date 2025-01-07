@@ -5,6 +5,7 @@ import (
 
 	"github.com/sanbornm/go-selfupdate/selfupdate"
 	"github.com/spf13/cobra"
+	"github.com/welovemedia/ffmate/pkg/config"
 )
 
 var updateCmd = &cobra.Command{
@@ -19,7 +20,7 @@ func init() {
 	updateCmd.PersistentFlags().BoolVarP(&dry, "dry", "", false, "run in dry mode (no real update)")
 
 	updater = &selfupdate.Updater{
-		CurrentVersion: appVersion,
+		CurrentVersion: config.Config().AppVersion,
 		ApiURL:         "https://ffmate.sev.wtf/_update/",
 		BinURL:         "https://ffmate.sev.wtf/_update/",
 		ForceCheck:     true,
@@ -34,7 +35,7 @@ func updateAvailable() (string, bool, error) {
 	if err != nil {
 		return "", false, err
 	}
-	if res == "" || res == appVersion {
+	if res == "" || res == config.Config().AppVersion {
 		return "", false, nil
 	}
 

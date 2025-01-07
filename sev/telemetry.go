@@ -8,6 +8,7 @@ import (
 	"time"
 
 	promDto "github.com/prometheus/client_model/go"
+	"github.com/welovemedia/ffmate/pkg/config"
 )
 
 type Stats struct {
@@ -26,8 +27,8 @@ type Stats struct {
 
 func (s *Sev) SendTelemtry(targetUrl string, custom map[string]interface{}) {
 	stats := Stats{
-		AppName:    s.AppName(),
-		AppVersion: s.AppVersion(),
+		AppName:    config.Config().AppName,
+		AppVersion: config.Config().AppVersion,
 
 		RuntimeDuration: time.Since(s.AppStartTime()),
 
@@ -58,7 +59,7 @@ func (s *Sev) SendTelemtry(targetUrl string, custom map[string]interface{}) {
 		return
 	}
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("User-Agent", s.AppName()+"/"+s.AppVersion())
+	req.Header.Add("User-Agent", config.Config().AppName+"/"+config.Config().AppVersion)
 
 	_, err = client.Do(req)
 	if err != nil {

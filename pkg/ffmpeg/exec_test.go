@@ -20,7 +20,7 @@ func TestEvaluateWildcards(t *testing.T) {
 	cmd := "-i ${INPUT_FILE} -test ${DATE_YEAR} ${DATE_SHORTYEAR} ${DATE_MONTH} ${DATE_DAY} ${TIME_HOUR} ${TIME_MINUTE} ${TIME_SECOND} ${OUTPUT_FILE}"
 
 	// Creating the execution request
-	request := &ExceutionRequest{Task: nil, Logger: nil, Command: cmd, InputFile: inputFile, OutputFile: outputFile}
+	request := &ExecutionRequest{Task: nil, Logger: nil, Command: cmd, InputFile: inputFile, OutputFile: outputFile}
 
 	// Evaluate the wildcards in the command
 	evaluateWildcards(request)

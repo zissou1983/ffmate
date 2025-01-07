@@ -21,8 +21,6 @@ import (
 )
 
 type Sev struct {
-	appName      string
-	appVersion   string
 	appStartTime time.Time
 
 	logger *logrus.Logger
@@ -74,8 +72,6 @@ func New(name string, version string, dbPath string, debug bool, port uint) *Sev
 	metrics.Init()
 
 	sev := &Sev{
-		appName:      name,
-		appVersion:   version,
 		appStartTime: time.Now(),
 
 		logger: logger,
@@ -93,14 +89,6 @@ func New(name string, version string, dbPath string, debug bool, port uint) *Sev
 	sev.registerMetrics()
 
 	return sev
-}
-
-func (s *Sev) AppName() string {
-	return s.appName
-}
-
-func (s *Sev) AppVersion() string {
-	return s.appVersion
 }
 
 func (s *Sev) AppStartTime() time.Time {
