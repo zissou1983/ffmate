@@ -29,7 +29,7 @@ func init() {
 	viper.BindPFlag("port", serverCmd.PersistentFlags().Lookup("port"))
 	viper.BindPFlag("database", serverCmd.PersistentFlags().Lookup("database"))
 	viper.BindPFlag("maxConcurrentTasks", serverCmd.PersistentFlags().Lookup("max-concurrent-tasks"))
-	viper.BindPFlag("send-telemetry", serverCmd.PersistentFlags().Lookup("send-telemetry"))
+	viper.BindPFlag("sendTelemetry", serverCmd.PersistentFlags().Lookup("send-telemetry"))
 }
 
 func start(cmd *cobra.Command, args []string) {
