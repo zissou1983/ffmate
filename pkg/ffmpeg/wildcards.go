@@ -1,6 +1,7 @@
 package ffmpeg
 
 import (
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -26,5 +27,8 @@ func evaluateWildcards(request *ExecutionRequest) {
 	request.Command = strings.ReplaceAll(request.Command, "${TIMESTAMP_MILLISECONDS}", strconv.FormatInt(time.Now().UnixMilli(), 10))
 	request.Command = strings.ReplaceAll(request.Command, "${TIMESTAMP_MICROSECONDS}", strconv.FormatInt(time.Now().UnixMicro(), 10))
 	request.Command = strings.ReplaceAll(request.Command, "${TIMESTAMP_NANOSECONDS}", strconv.FormatInt(time.Now().UnixNano(), 10))
+
+	request.Command = strings.ReplaceAll(request.Command, "${OS_NAME}", runtime.GOOS)
+	request.Command = strings.ReplaceAll(request.Command, "${OS_ARCH}", runtime.GOARCH)
 
 }
