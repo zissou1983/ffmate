@@ -8,7 +8,7 @@ import (
 	"time"
 
 	promDto "github.com/prometheus/client_model/go"
-	"github.com/welovemedia/ffmate/pkg/config"
+	"github.com/welovemedia/ffmate/internal/config"
 )
 
 type Stats struct {

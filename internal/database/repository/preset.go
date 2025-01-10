@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/google/uuid"
-	"github.com/welovemedia/ffmate/pkg/database/model"
+	"github.com/welovemedia/ffmate/internal/database/model"
 	"gorm.io/gorm"
 )
 

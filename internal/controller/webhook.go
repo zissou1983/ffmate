@@ -2,9 +2,9 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/welovemedia/ffmate/pkg/database/repository"
-	"github.com/welovemedia/ffmate/pkg/dto"
-	"github.com/welovemedia/ffmate/pkg/service"
+	"github.com/welovemedia/ffmate/internal/database/repository"
+	"github.com/welovemedia/ffmate/internal/dto"
+	"github.com/welovemedia/ffmate/internal/service"
 	"github.com/welovemedia/ffmate/sev"
 	"github.com/welovemedia/ffmate/sev/exceptions"
 )

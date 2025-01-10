@@ -2,7 +2,7 @@ package ffmpeg
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/welovemedia/ffmate/pkg/database/model"
+	"github.com/welovemedia/ffmate/internal/database/model"
 )
 
 // FFmpegProgress holds parsed progress data

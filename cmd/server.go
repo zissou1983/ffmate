@@ -3,10 +3,10 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/welovemedia/ffmate/pkg"
-	"github.com/welovemedia/ffmate/pkg/config"
-	"github.com/welovemedia/ffmate/pkg/database/repository"
-	"github.com/welovemedia/ffmate/pkg/dto"
+	"github.com/welovemedia/ffmate/internal"
+	"github.com/welovemedia/ffmate/internal/config"
+	"github.com/welovemedia/ffmate/internal/database/repository"
+	"github.com/welovemedia/ffmate/internal/dto"
 	"github.com/welovemedia/ffmate/sev"
 )
 
@@ -68,7 +68,7 @@ func start(cmd *cobra.Command, args []string) {
 		})
 	}
 
-	pkg.Init(s, config.Config().MaxConcurrentTasks)
+	internal.Init(s, config.Config().MaxConcurrentTasks)
 
 	res, found, _ := updateAvailable()
 	if found {

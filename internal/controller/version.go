@@ -2,8 +2,8 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/welovemedia/ffmate/pkg/config"
-	"github.com/welovemedia/ffmate/pkg/dto"
+	"github.com/welovemedia/ffmate/internal/config"
+	"github.com/welovemedia/ffmate/internal/dto"
 	"github.com/welovemedia/ffmate/sev"
 )
 

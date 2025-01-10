@@ -5,7 +5,7 @@ import (
 
 	"github.com/sanbornm/go-selfupdate/selfupdate"
 	"github.com/spf13/cobra"
-	"github.com/welovemedia/ffmate/pkg/config"
+	"github.com/welovemedia/ffmate/internal/config"
 )
 
 var updateCmd = &cobra.Command{

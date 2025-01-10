@@ -4,9 +4,9 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/welovemedia/ffmate/pkg/database/model"
-	"github.com/welovemedia/ffmate/pkg/database/repository"
-	"github.com/welovemedia/ffmate/pkg/dto"
+	"github.com/welovemedia/ffmate/internal/database/model"
+	"github.com/welovemedia/ffmate/internal/database/repository"
+	"github.com/welovemedia/ffmate/internal/dto"
 	"github.com/welovemedia/ffmate/sev"
 )
 

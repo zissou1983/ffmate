@@ -7,7 +7,7 @@ import (
 	"github.com/sanbornm/go-selfupdate/selfupdate"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/welovemedia/ffmate/pkg/config"
+	"github.com/welovemedia/ffmate/internal/config"
 	"github.com/yosev/debugo"
 )
 

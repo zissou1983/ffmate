@@ -1,12 +1,12 @@
-package pkg
+package internal
 
 import (
-	"github.com/welovemedia/ffmate/pkg/controller"
-	"github.com/welovemedia/ffmate/pkg/database/repository"
-	"github.com/welovemedia/ffmate/pkg/metrics"
-	"github.com/welovemedia/ffmate/pkg/middleware"
-	"github.com/welovemedia/ffmate/pkg/queue"
-	"github.com/welovemedia/ffmate/pkg/service"
+	"github.com/welovemedia/ffmate/internal/controller"
+	"github.com/welovemedia/ffmate/internal/database/repository"
+	"github.com/welovemedia/ffmate/internal/metrics"
+	"github.com/welovemedia/ffmate/internal/middleware"
+	"github.com/welovemedia/ffmate/internal/queue"
+	"github.com/welovemedia/ffmate/internal/service"
 	"github.com/welovemedia/ffmate/sev"
 )
 

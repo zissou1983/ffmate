@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/welovemedia/ffmate/pkg/config"
+	"github.com/welovemedia/ffmate/internal/config"
 	"github.com/welovemedia/ffmate/sev"
 )
 

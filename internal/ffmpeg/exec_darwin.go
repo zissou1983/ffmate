@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/welovemedia/ffmate/pkg/config"
+	"github.com/welovemedia/ffmate/internal/config"
 	"github.com/yosev/debugo"
 )
 

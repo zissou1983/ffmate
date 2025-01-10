@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/welovemedia/ffmate/pkg/config"
-	"github.com/welovemedia/ffmate/pkg/database/model"
-	"github.com/welovemedia/ffmate/pkg/dto"
+	"github.com/welovemedia/ffmate/internal/config"
+	"github.com/welovemedia/ffmate/internal/database/model"
+	"github.com/welovemedia/ffmate/internal/dto"
 )
 
 type eventMessage struct {
