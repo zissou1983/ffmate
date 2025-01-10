@@ -24,6 +24,34 @@ func (s *TaskService) GetTaskById(uuid string) (*model.Task, error) {
 	return s.TaskRepository.First(uuid)
 }
 
+func (s *TaskService) DeleteTask(uuid string) error {
+	w, err := s.TaskRepository.First(uuid)
+	if err != nil {
+		return err
+	}
+
+	if w.Uuid == "" {
+		return errors.New("task for given uuid not found")
+	}
+
+	if w.Status == dto.RUNNING {
+		return errors.New("running tasks can not be deleted, cancel first")
+	}
+
+	err = s.TaskRepository.Delete(w)
+	if err != nil {
+		s.Sev.Logger().Warnf("failed to delete task (uuid: %s): %+v", w.Uuid, err)
+		return err
+	}
+
+	s.Sev.Logger().Infof("deleted task (uuid: %s)", w.Uuid)
+
+	s.Sev.Metrics().Gauge("task.deleted").Inc()
+	s.WebhookService.Fire(dto.TASK_DELETED, w)
+
+	return nil
+}
+
 func (s *TaskService) CancelTask(uuid string) (*model.Task, error) {
 	t, err := s.TaskRepository.First(uuid)
 	if err != nil {

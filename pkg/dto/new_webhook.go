@@ -4,6 +4,7 @@ type WebhookEvent string
 
 const (
 	TASK_CREATED        WebhookEvent = "task.created"
+	TASK_DELETED        WebhookEvent = "task.deleted"
 	TASK_STATUS_UPDATED WebhookEvent = "task.status.updated"
 
 	PRESET_CREATED WebhookEvent = "preset.created"

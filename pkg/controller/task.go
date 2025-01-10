@@ -38,6 +38,7 @@ func (c *TaskController) Setup(s *sev.Sev) {
 	s.Gin().GET(c.Prefix+c.getEndpoint(), c.listTasks)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addTask)
 	s.Gin().GET(c.Prefix+c.getEndpoint()+"/:uuid", c.getTask)
+	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deleteTask)
 	s.Gin().PATCH(c.Prefix+c.getEndpoint()+"/:uuid/cancel", c.cancelTask)
 }
 
@@ -61,6 +62,25 @@ func (c *TaskController) listTasks(gin *gin.Context) {
 	}
 
 	gin.JSON(200, taskDTOs)
+}
+
+// @Summary Delete a task
+// @Description Delete a task by its uuid
+// @Tags tasks
+// @Param uuid path string true "the tasks uuid"
+// @Produce json
+// @Success 204
+// @Router /tasks/{uuid} [delete]
+func (c *TaskController) deleteTask(gin *gin.Context) {
+	uuid := gin.Param("uuid")
+	err := c.taskService.DeleteTask(uuid)
+
+	if err != nil {
+		gin.JSON(400, exceptions.HttpBadRequest(err))
+		return
+	}
+
+	gin.AbortWithStatus(204)
 }
 
 // @Summary Add a new task

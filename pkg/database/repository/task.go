@@ -27,6 +27,11 @@ func (m *Task) Create(command string, inputField string, outputFile string) (*mo
 	return task, db.Error
 }
 
+func (m *Task) Delete(w *model.Task) error {
+	m.DB.Delete(w)
+	return m.DB.Error
+}
+
 func (m *Task) First(uuid string) (*model.Task, error) {
 	var task *model.Task
 	db := m.DB.Where("uuid", uuid).First(&task)
