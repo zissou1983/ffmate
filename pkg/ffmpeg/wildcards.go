@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func evaluateWildcards(request *ExecutionRequest) {
@@ -31,4 +33,5 @@ func evaluateWildcards(request *ExecutionRequest) {
 	request.Command = strings.ReplaceAll(request.Command, "${OS_NAME}", runtime.GOOS)
 	request.Command = strings.ReplaceAll(request.Command, "${OS_ARCH}", runtime.GOARCH)
 
+	request.Command = strings.ReplaceAll(request.Command, "${UUID}", uuid.NewString())
 }
