@@ -22,7 +22,17 @@ func (m *Task) List() (*[]model.Task, error) {
 }
 
 func (m *Task) Create(newTask *dto.NewTask, batch string) (*model.Task, error) {
-	task := &model.Task{Uuid: uuid.NewString(), Command: newTask.Command, InputFile: newTask.InputFile, OutputFile: newTask.OutputFile, Name: newTask.Name, Priority: newTask.Priority, Progress: 0, Status: dto.QUEUED, Batch: batch}
+	task := &model.Task{
+		Uuid:           uuid.NewString(),
+		Command:        newTask.Command,
+		InputFile:      newTask.InputFile,
+		OutputFile:     newTask.OutputFile,
+		Name:           newTask.Name,
+		Priority:       newTask.Priority,
+		Progress:       0,
+		Status:         dto.QUEUED,
+		Batch:          batch,
+		PostProcessing: newTask.PostProcessing}
 	db := m.DB.Create(task)
 	return task, db.Error
 }

@@ -27,6 +27,8 @@ type Task struct {
 	Progress float64
 
 	Priority uint
+
+	PostProcessing *dto.PostProcessing `gorm:"type:json"`
 }
 
 func (m *Task) ToDto() *dto.Task {
@@ -44,6 +46,8 @@ func (m *Task) ToDto() *dto.Task {
 		Progress: m.Progress,
 
 		Priority: m.Priority,
+
+		PostProcessing: m.PostProcessing,
 
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,

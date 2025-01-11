@@ -1,6 +1,10 @@
 package queue
 
 import (
+	"encoding/json"
+	"os"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/welovemedia/ffmate/internal/database/model"
@@ -8,6 +12,7 @@ import (
 	"github.com/welovemedia/ffmate/internal/dto"
 	"github.com/welovemedia/ffmate/internal/ffmpeg"
 	"github.com/welovemedia/ffmate/internal/service"
+	"github.com/welovemedia/ffmate/internal/utils/wildcards"
 	"github.com/welovemedia/ffmate/sev"
 	"github.com/yosev/debugo"
 )
@@ -61,6 +66,36 @@ func (q *Queue) processTask(task *model.Task) {
 
 	q.updateTaskStatus(task, dto.DONE_SUCCESSFUL)
 	q.Sev.Logger().Infof("task successful (uuid: %s)", task.Uuid)
+
+	q.postProcessTask(task)
+}
+
+func (q *Queue) postProcessTask(task *model.Task) {
+	if task.PostProcessing != nil {
+		if task.PostProcessing.SidecarPath != "" {
+			b, err := json.Marshal(task.ToDto())
+			if err != nil {
+				q.Sev.Logger().Errorf("failed to marshal task: %v", err)
+			} else {
+				err = os.WriteFile(wildcards.Replace(task.PostProcessing.SidecarPath, task.InputFile, task.OutputFile), b, 0644)
+				if err != nil {
+					q.Sev.Logger().Errorf("failed to write mashaled task to file: %v", err)
+				}
+			}
+		}
+		args := strings.Split(wildcards.Replace(task.PostProcessing.ScriptPath, task.InputFile, task.OutputFile), " ")
+		cmd := exec.Command(args[0], args[1:]...)
+		q.Sev.Logger().Infof("triggered postProcessing (uuid: %s)", task.Uuid)
+
+		if err := cmd.Start(); err != nil {
+			q.Sev.Logger().Errorf("failed to start postProcessing (uuid: %s): %v", task.Uuid, err)
+		}
+
+		if err := cmd.Wait(); err != nil {
+			q.Sev.Logger().Errorf("failed postProcessing (uuid: %s): %v", task.Uuid, err)
+		}
+		q.Sev.Logger().Infof("finished postProcessing (uuid: %s)", task.Uuid)
+	}
 }
 
 func (q *Queue) updateTaskStatus(task *model.Task, status dto.TaskStatus) {

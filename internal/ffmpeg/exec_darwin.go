@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/welovemedia/ffmate/internal/config"
+	"github.com/welovemedia/ffmate/internal/utils/wildcards"
 	"github.com/yosev/debugo"
 )
 
@@ -17,7 +18,7 @@ var debug = debugo.New("ffmpeg")
 
 // ExecuteFFmpeg runs the ffmpeg command, provides progress updates, and checks the result
 func Execute(request *ExecutionRequest, updateFunc func(progress float64)) error {
-	evaluateWildcards(request)
+	request.Command = wildcards.Replace(request.Command, request.InputFile, request.OutputFile)
 
 	args := strings.Split(request.Command, " ")
 	args = append(args, "-progress", "pipe:2")

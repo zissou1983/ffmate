@@ -10,4 +10,6 @@ type NewTask struct {
 	OutputFile string `json:"outputFile"`
 
 	Priority uint `json:"priority"`
+
+	PostProcessing *PostProcessing `json:"postProcessing"`
 }

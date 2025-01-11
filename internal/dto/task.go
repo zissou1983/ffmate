@@ -1,6 +1,9 @@
 package dto
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -13,6 +16,11 @@ const (
 	DONE_ERROR      TaskStatus = "DONE_ERROR"
 	DONE_CANCELED   TaskStatus = "DONE_CANCELED"
 )
+
+type PostProcessing struct {
+	ScriptPath  string `json:"scriptPath"`
+	SidecarPath string `json:"sidecarPath"`
+}
 
 type Task struct {
 	Uuid  string `json:"uuid"`
@@ -29,6 +37,23 @@ type Task struct {
 
 	Priority uint `json:"priority"`
 
+	PostProcessing *PostProcessing `json:"postProcessing,omitempty"`
+
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+func (p PostProcessing) Value() (driver.Value, error) {
+	return json.Marshal(p)
+}
+
+func (p *PostProcessing) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+	return json.Unmarshal(bytes, p)
 }

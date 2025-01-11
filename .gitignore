@@ -6,3 +6,5 @@ _update
 _bin/
 dist/
 .vscode/
+moo.txt
+uptime.sh
