@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/welovemedia/ffmate/internal/controller"
 	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/metrics"
@@ -13,6 +14,15 @@ import (
 var prefix = "/api"
 
 func Init(s *sev.Sev, concurrentTasks uint) {
+	// setup cors
+	s.Gin().Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"*"},
+		AllowCredentials: true,
+	}))
+
 	// setup repositories
 	(&repository.Task{DB: s.DB()}).Setup()
 	(&repository.Webhook{DB: s.DB()}).Setup()
@@ -36,6 +46,7 @@ func Init(s *sev.Sev, concurrentTasks uint) {
 	s.RegisterController(&controller.WebController{Prefix: prefix})
 	s.RegisterController(&controller.DebugController{Prefix: prefix})
 	s.RegisterController(&controller.VersionController{Prefix: prefix})
+	s.RegisterController(&controller.WebsocketController{Prefix: prefix})
 
 	// Initialize queue processor
 	(&queue.Queue{
@@ -47,5 +58,6 @@ func Init(s *sev.Sev, concurrentTasks uint) {
 				DB: s.DB(),
 			},
 		},
+		WebsocketService:   &service.WebsocketService{},
 		MaxConcurrentTasks: concurrentTasks}).Init()
 }

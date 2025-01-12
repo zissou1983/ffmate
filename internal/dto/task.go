@@ -12,6 +12,7 @@ type TaskStatus string
 const (
 	QUEUED          TaskStatus = "QUEUED"
 	RUNNING         TaskStatus = "RUNNING"
+	POST_PROCESSING TaskStatus = "POST_PROCESSING"
 	DONE_SUCCESSFUL TaskStatus = "DONE_SUCCESSFUL"
 	DONE_ERROR      TaskStatus = "DONE_ERROR"
 	DONE_CANCELED   TaskStatus = "DONE_CANCELED"

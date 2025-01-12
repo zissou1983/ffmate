@@ -33,6 +33,7 @@ func (c *TaskController) Setup(s *sev.Sev) {
 				DB: s.DB(),
 			},
 		},
+		Websocketservice: &service.WebsocketService{},
 	}
 	c.sev = s
 	s.Gin().GET(c.Prefix+c.getEndpoint(), c.listTasks)

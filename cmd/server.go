@@ -22,7 +22,7 @@ func init() {
 	serverCmd.PersistentFlags().StringP("ffmpeg", "f", "ffmpeg", "path to ffmpeg binary")
 	serverCmd.PersistentFlags().StringP("port", "p", "3000", "the port to listen ob")
 	serverCmd.PersistentFlags().StringP("database", "", "db.sqlite", "the path do the database")
-	serverCmd.PersistentFlags().UintP("max-concurrent-tasks", "m", 1, "define maximum concurrent running tasks")
+	serverCmd.PersistentFlags().UintP("max-concurrent-tasks", "m", 3, "define maximum concurrent running tasks")
 	serverCmd.PersistentFlags().BoolP("send-telemetry", "", true, "enable sending anonymous telemetry data")
 
 	viper.BindPFlag("ffmpeg", serverCmd.PersistentFlags().Lookup("ffmpeg"))

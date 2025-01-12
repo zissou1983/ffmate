@@ -11,10 +11,11 @@ import (
 )
 
 type TaskService struct {
-	Sev            *sev.Sev
-	TaskRepository *repository.Task
-	WebhookService *WebhookService
-	PresetService  *PresetService
+	Sev              *sev.Sev
+	TaskRepository   *repository.Task
+	WebhookService   *WebhookService
+	PresetService    *PresetService
+	Websocketservice *WebsocketService
 }
 
 func (s *TaskService) ListTasks() (*[]model.Task, error) {
@@ -52,7 +53,8 @@ func (s *TaskService) DeleteTask(uuid string) error {
 	s.Sev.Logger().Infof("deleted task (uuid: %s)", w.Uuid)
 
 	s.Sev.Metrics().Gauge("task.deleted").Inc()
-	s.WebhookService.Fire(dto.TASK_DELETED, w)
+	s.WebhookService.Fire(dto.TASK_DELETED, w.ToDto())
+	s.Websocketservice.Broadcast(TASK_DELETED, w.ToDto())
 
 	return nil
 }
@@ -74,6 +76,7 @@ func (s *TaskService) CancelTask(uuid string) (*model.Task, error) {
 
 	s.Sev.Metrics().Gauge("task.status.updated").Inc()
 	s.WebhookService.Fire(dto.TASK_STATUS_UPDATED, task.ToDto())
+	s.Websocketservice.Broadcast(TASK_UPDATED, task.ToDto())
 
 	return task, err
 }
@@ -90,6 +93,7 @@ func (s *TaskService) NewTask(task *dto.NewTask) (*model.Task, error) {
 
 	s.Sev.Metrics().Gauge("task.created").Inc()
 	s.WebhookService.Fire(dto.TASK_CREATED, t.ToDto())
+	s.Websocketservice.Broadcast(TASK_CREATED, t.ToDto())
 
 	s.Sev.Logger().Infof("new task added to queue (uuid: %s)", t.Uuid)
 	return t, err
@@ -115,6 +119,7 @@ func (s *TaskService) NewTasks(tasks *[]dto.NewTask) (*[]model.Task, error) {
 
 		s.Sev.Metrics().Gauge("task.created").Inc()
 		s.WebhookService.Fire(dto.TASK_CREATED, t.ToDto())
+		s.Websocketservice.Broadcast(TASK_CREATED, t.ToDto())
 
 		s.Sev.Logger().Infof("new task added to queue (uuid: %s)", t.Uuid)
 	}

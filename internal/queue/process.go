@@ -21,6 +21,7 @@ type Queue struct {
 	Sev                *sev.Sev
 	TaskRepository     *repository.Task
 	WebhookService     *service.WebhookService
+	WebsocketService   *service.WebsocketService
 	MaxConcurrentTasks uint
 }
 
@@ -56,7 +57,7 @@ func (q *Queue) processTask(task *model.Task) {
 
 	cmd := task.Command
 	err := ffmpeg.Execute(&ffmpeg.ExecutionRequest{Task: task, Command: cmd, InputFile: task.InputFile, OutputFile: task.OutputFile, Logger: q.Sev.Logger()}, func(progress float64) {
-		q.TaskRepository.SetTaskProgress(task, progress)
+		q.updateTaskProgress(task, progress)
 	})
 	if err != nil {
 		q.updateTaskStatus(task, dto.DONE_ERROR)
@@ -64,14 +65,16 @@ func (q *Queue) processTask(task *model.Task) {
 		return
 	}
 
+	q.postProcessTask(task)
+
 	q.updateTaskStatus(task, dto.DONE_SUCCESSFUL)
 	q.Sev.Logger().Infof("task successful (uuid: %s)", task.Uuid)
 
-	q.postProcessTask(task)
 }
 
 func (q *Queue) postProcessTask(task *model.Task) {
 	if task.PostProcessing != nil {
+		q.updateTaskStatus(task, dto.POST_PROCESSING)
 		if task.PostProcessing.SidecarPath != "" {
 			b, err := json.Marshal(task.ToDto())
 			if err != nil {
@@ -98,8 +101,14 @@ func (q *Queue) postProcessTask(task *model.Task) {
 	}
 }
 
+func (q *Queue) updateTaskProgress(task *model.Task, progress float64) {
+	q.TaskRepository.SetTaskProgress(task, progress)
+	q.WebsocketService.Broadcast(service.TASK_UPDATED, task.ToDto())
+}
+
 func (q *Queue) updateTaskStatus(task *model.Task, status dto.TaskStatus) {
 	q.TaskRepository.SetTaskStatus(task, status)
+	q.WebsocketService.Broadcast(service.TASK_UPDATED, task.ToDto())
 	q.Sev.Metrics().Gauge("task.status.updated").Inc()
 	q.WebhookService.Fire(dto.TASK_STATUS_UPDATED, task.ToDto())
 }

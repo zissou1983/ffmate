@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -55,8 +56,9 @@ func Execute(request *ExecutionRequest, updateFunc func(progress float64)) error
 				duration = parseDuration(durationStr)
 			}
 			if progress := parseFFmpegOutput(line, duration); progress != nil {
-				debug.Debugf("progress: %f %+v (uuid: %s)", progress.Time/duration*100, progress, request.Task.Uuid)
-				updateFunc(progress.Time / duration * 100)
+				p := math.Round((progress.Time/duration*100)*100) / 100
+				debug.Debugf("progress: %f %+v (uuid: %s)", p, progress, request.Task.Uuid)
+				updateFunc(p)
 			}
 		}
 		if err := scanner.Err(); err != nil {
