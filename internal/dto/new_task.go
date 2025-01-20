@@ -11,5 +11,6 @@ type NewTask struct {
 
 	Priority uint `json:"priority"`
 
-	PostProcessing *PostProcessing `json:"postProcessing"`
+	PreProcessing  *NewPrePostProcessing `json:"preProcessing"`
+	PostProcessing *NewPrePostProcessing `json:"postProcessing"`
 }

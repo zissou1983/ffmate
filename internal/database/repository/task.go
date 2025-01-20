@@ -26,18 +26,31 @@ func (m *Task) List() (*[]model.Task, error) {
 	return tasks, m.DB.Error
 }
 
-func (m *Task) Create(newTask *dto.NewTask, batch string) (*model.Task, error) {
+func (m *Task) Create(newTask *dto.NewTask, batch string, source string) (*model.Task, error) {
 	task := &model.Task{
-		Uuid:           uuid.NewString(),
-		Command:        newTask.Command,
-		InputFile:      newTask.InputFile,
-		OutputFile:     newTask.OutputFile,
-		Name:           newTask.Name,
-		Priority:       newTask.Priority,
-		Progress:       0,
-		Status:         dto.QUEUED,
-		Batch:          batch,
-		PostProcessing: newTask.PostProcessing}
+		Uuid:       uuid.NewString(),
+		Command:    &dto.RawResolved{Raw: newTask.Command},
+		InputFile:  &dto.RawResolved{Raw: newTask.InputFile},
+		OutputFile: &dto.RawResolved{Raw: newTask.OutputFile},
+		Name:       newTask.Name,
+		Priority:   newTask.Priority,
+		Progress:   0,
+		Source:     source,
+		Status:     dto.QUEUED,
+		Batch:      batch,
+	}
+	if newTask.PreProcessing != nil {
+		task.PreProcessing = &dto.PrePostProcessing{
+			ScriptPath:  &dto.RawResolved{Raw: newTask.PreProcessing.ScriptPath},
+			SidecarPath: &dto.RawResolved{Raw: newTask.PreProcessing.SidecarPath},
+		}
+	}
+	if newTask.PostProcessing != nil {
+		task.PostProcessing = &dto.PrePostProcessing{
+			ScriptPath:  &dto.RawResolved{Raw: newTask.PostProcessing.ScriptPath},
+			SidecarPath: &dto.RawResolved{Raw: newTask.PostProcessing.SidecarPath},
+		}
+	}
 	db := m.DB.Create(task)
 	return task, db.Error
 }

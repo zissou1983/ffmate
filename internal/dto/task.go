@@ -11,29 +11,29 @@ type TaskStatus string
 const (
 	QUEUED          TaskStatus = "QUEUED"
 	RUNNING         TaskStatus = "RUNNING"
+	PRE_PROCESSING  TaskStatus = "PRE_PROCESSING"
 	POST_PROCESSING TaskStatus = "POST_PROCESSING"
 	DONE_SUCCESSFUL TaskStatus = "DONE_SUCCESSFUL"
 	DONE_ERROR      TaskStatus = "DONE_ERROR"
 	DONE_CANCELED   TaskStatus = "DONE_CANCELED"
 )
 
-type ResolvedPostProcessing struct {
+type NewPrePostProcessing struct {
 	ScriptPath  string `json:"scriptPath,omitempty"`
 	SidecarPath string `json:"sidecarPath,omitempty"`
-}
-type Resolved struct {
-	Command        string                  `json:"command"`
-	InputFile      string                  `json:"inputFile"`
-	OutputFile     string                  `json:"outputFile"`
-	PostProcessing *ResolvedPostProcessing `json:"postProcessing,omitempty"`
 }
 
-type PostProcessing struct {
-	ScriptPath  string `json:"scriptPath,omitempty"`
-	SidecarPath string `json:"sidecarPath,omitempty"`
-	Error       string `json:"error,omitempty"`
-	StartedAt   int64  `json:"startedAt,omitempty"`
-	FinishedAt  int64  `json:"finishedAt,omitempty"`
+type PrePostProcessing struct {
+	ScriptPath  *RawResolved `json:"scriptPath,omitempty"`
+	SidecarPath *RawResolved `json:"sidecarPath,omitempty"`
+	Error       string       `json:"error,omitempty"`
+	StartedAt   int64        `json:"startedAt,omitempty"`
+	FinishedAt  int64        `json:"finishedAt,omitempty"`
+}
+
+type RawResolved struct {
+	Raw      string `json:"raw"`
+	Resolved string `json:"resolved,omitempty"`
 }
 
 type Task struct {
@@ -42,11 +42,9 @@ type Task struct {
 
 	Name string `json:"name,omitempty"`
 
-	Resolved *Resolved `json:"resolved,omitempty"`
-
-	Command    string `json:"command"`
-	InputFile  string `json:"inputFile"`
-	OutputFile string `json:"outputFile"`
+	Command    *RawResolved `json:"command"`
+	InputFile  *RawResolved `json:"inputFile"`
+	OutputFile *RawResolved `json:"outputFile"`
 
 	Status   TaskStatus `json:"status"`
 	Progress float64    `json:"progress"`
@@ -54,7 +52,8 @@ type Task struct {
 
 	Priority uint `json:"priority"`
 
-	PostProcessing *PostProcessing `json:"postProcessing,omitempty"`
+	PreProcessing  *PrePostProcessing `json:"preProcessing,omitempty"`
+	PostProcessing *PrePostProcessing `json:"postProcessing,omitempty"`
 
 	StartedAt  int64 `json:"startedAt,omitempty"`
 	FinishedAt int64 `json:"finishedAt,omitempty"`
@@ -63,11 +62,11 @@ type Task struct {
 	UpdatedAt int64 `json:"updatedAt"`
 }
 
-func (p PostProcessing) Value() (driver.Value, error) {
+func (p PrePostProcessing) Value() (driver.Value, error) {
 	return json.Marshal(p)
 }
 
-func (p *PostProcessing) Scan(value interface{}) error {
+func (p *PrePostProcessing) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
@@ -78,11 +77,11 @@ func (p *PostProcessing) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, p)
 }
 
-func (p Resolved) Value() (driver.Value, error) {
+func (p RawResolved) Value() (driver.Value, error) {
 	return json.Marshal(p)
 }
 
-func (p *Resolved) Scan(value interface{}) error {
+func (p *RawResolved) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}

@@ -56,7 +56,7 @@ func start(cmd *cobra.Command, args []string) {
 			countDoneCanceled, _ := taskRepo.CountByStatus(dto.DONE_CANCELED)
 			countWebhooks, _ := webhookRepo.Count()
 			s.SendTelemtry(
-				"https://eu-central-1.app.helmut.cloud/api/high5/v1/org/sev.wtf/spaces/Telegram/execute/webhook/804b722256a60614806444fee6859b8130bd652a7a6f589d887bdc3cfdf5de603a862f5f0e551ce4f4e581296a1a595dc5b286329cce2b2735b8657374c8d413",
+				"https://telemetry.ffmate.io",
 				map[string]interface{}{
 					"Tasks":               count,
 					"TasksQueued":         countQueued,

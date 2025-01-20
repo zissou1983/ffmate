@@ -77,7 +77,7 @@ func (s *TaskService) CancelTask(uuid string) (*model.Task, error) {
 	}
 
 	s.Sev.Metrics().Gauge("task.status.updated").Inc()
-	s.WebhookService.Fire(dto.TASK_STATUS_UPDATED, task.ToDto())
+	s.WebhookService.Fire(dto.TASK_UPDATED, task.ToDto())
 	s.Websocketservice.Broadcast(TASK_UPDATED, task.ToDto())
 
 	return task, err
@@ -91,7 +91,7 @@ func (s *TaskService) NewTask(task *dto.NewTask) (*model.Task, error) {
 		}
 		task.Command = preset.Command
 	}
-	t, err := s.TaskRepository.Create(task, "")
+	t, err := s.TaskRepository.Create(task, "", "api")
 
 	s.Sev.Metrics().Gauge("task.created").Inc()
 	s.WebhookService.Fire(dto.TASK_CREATED, t.ToDto())
@@ -112,7 +112,7 @@ func (s *TaskService) NewTasks(tasks *[]dto.NewTask) (*[]model.Task, error) {
 			}
 			task.Command = preset.Command
 		}
-		t, err := s.TaskRepository.Create(&task, batch)
+		t, err := s.TaskRepository.Create(&task, batch, "api")
 		if err != nil {
 			return nil, err
 		}
