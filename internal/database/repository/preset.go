@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/google/uuid"
 	"github.com/welovemedia/ffmate/internal/database/model"
+	"github.com/welovemedia/ffmate/internal/dto"
 	"gorm.io/gorm"
 )
 
@@ -25,8 +26,16 @@ func (m *Preset) Delete(w *model.Preset) error {
 	return m.DB.Error
 }
 
-func (m *Preset) Create(command string, name string, description string) (*model.Preset, error) {
-	preset := &model.Preset{Uuid: uuid.NewString(), Command: command, Name: name, Description: description}
+func (m *Preset) Create(newPreset *dto.NewPreset) (*model.Preset, error) {
+	preset := &model.Preset{
+		Uuid:           uuid.NewString(),
+		Command:        newPreset.Command,
+		Name:           newPreset.Name,
+		Description:    newPreset.Description,
+		Priority:       newPreset.Priority,
+		PreProcessing:  newPreset.PreProcessing,
+		PostProcessing: newPreset.PostProcessing,
+	}
 	db := m.DB.Create(preset)
 	return preset, db.Error
 }

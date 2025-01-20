@@ -91,3 +91,18 @@ func (p *RawResolved) Scan(value interface{}) error {
 	}
 	return json.Unmarshal(bytes, p)
 }
+
+func (n NewPrePostProcessing) Value() (driver.Value, error) {
+	return json.Marshal(n)
+}
+
+func (n *NewPrePostProcessing) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+	return json.Unmarshal(bytes, n)
+}

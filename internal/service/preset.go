@@ -62,7 +62,7 @@ func (s *PresetService) NewPreset(newPreset *dto.NewPreset) (*model.Preset, erro
 		return nil, errors.New("preset with given name already exists")
 	}
 
-	w, err := s.PresetRepository.Create(newPreset.Command, newPreset.Name, newPreset.Description)
+	w, err := s.PresetRepository.Create(newPreset)
 	s.Sev.Logger().Infof("created new preset (uuid: %s)", w.Uuid)
 
 	s.Sev.Metrics().Gauge("preset.created").Inc()
