@@ -58,7 +58,7 @@ func (q *Queue) processTask(task *model.Task) {
 	task.StartedAt = time.Now().UnixMilli()
 	q.Sev.Logger().Infof("processing task (uuid: %s)", task.Uuid)
 
-	err := q.preProcessTask(task)
+	err := q.prePostProcessTask(task, task.PreProcessing, "pre")
 	if err != nil {
 		q.failTask(task, fmt.Errorf("PreProcessing failed: %v", err))
 		return
@@ -85,7 +85,7 @@ func (q *Queue) processTask(task *model.Task) {
 		return
 	}
 
-	err = q.postProcessTask(task)
+	err = q.prePostProcessTask(task, task.PostProcessing, "post")
 	if err != nil {
 		q.failTask(task, fmt.Errorf("PostProcessing failed: %v", err))
 		return
@@ -98,22 +98,30 @@ func (q *Queue) processTask(task *model.Task) {
 
 }
 
-func (q *Queue) preProcessTask(task *model.Task) error {
-	if task.PreProcessing != nil && (task.PreProcessing.SidecarPath != nil || task.PreProcessing.ScriptPath != nil) {
-		q.Sev.Logger().Infof("starting preProcessing (uuid: %s)", task.Uuid)
-		task.PreProcessing.StartedAt = time.Now().UnixMilli()
-		task.Status = dto.PRE_PROCESSING
+func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProcessing, processorType string) error {
+	if processor != nil && (processor.SidecarPath != nil || processor.ScriptPath != nil) {
+		q.Sev.Logger().Infof("starting %sProcessing (uuid: %s)", processorType, task.Uuid)
+		processor.StartedAt = time.Now().UnixMilli()
+		if processorType == "pre" {
+			task.Status = dto.PRE_PROCESSING
+		} else {
+			task.Status = dto.POST_PROCESSING
+		}
 		q.updateTask(task)
-		if task.PreProcessing.SidecarPath != nil && task.PreProcessing.SidecarPath.Raw != "" {
+		if processor.SidecarPath != nil && processor.SidecarPath.Raw != "" {
 			b, err := json.Marshal(task.ToDto())
 			if err != nil {
 				q.Sev.Logger().Errorf("failed to marshal task to write sidecar file: %v", err)
 			} else {
-				task.PreProcessing.SidecarPath.Resolved = wildcards.Replace(task.PreProcessing.SidecarPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, false)
+				if processorType == "pre" {
+					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, false)
+				} else {
+					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, false)
+				}
 				q.updateTask(task)
-				err = os.WriteFile(task.PreProcessing.SidecarPath.Resolved, b, 0644)
+				err = os.WriteFile(processor.SidecarPath.Resolved, b, 0644)
 				if err != nil {
-					task.PreProcessing.Error = fmt.Errorf("failed to write sidecar: %v", err).Error()
+					processor.Error = fmt.Errorf("failed to write sidecar: %v", err).Error()
 					q.Sev.Logger().Errorf("failed to write sidecar file: %v", err)
 				} else {
 					debug.Debugf("wrote sidecar file (uuid: %s)", task.Uuid)
@@ -121,84 +129,35 @@ func (q *Queue) preProcessTask(task *model.Task) error {
 			}
 		}
 
-		if task.PreProcessing.Error == "" && task.PreProcessing.ScriptPath != nil && task.PreProcessing.ScriptPath.Raw != "" {
-			task.PreProcessing.ScriptPath.Resolved = wildcards.Replace(task.PreProcessing.ScriptPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, true)
+		if processor.Error == "" && processor.ScriptPath != nil && processor.ScriptPath.Raw != "" {
+			if processorType == "pre" {
+				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, true)
+			} else {
+				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, true)
+			}
 			q.updateTask(task)
-			args := ffmpeg.SplitCommand(task.PreProcessing.ScriptPath.Resolved)
+			args := ffmpeg.SplitCommand(processor.ScriptPath.Resolved)
 			cmd := exec.Command(args[0], args[1:]...)
-			debug.Debugf("triggered preProcessing script (uuid: %s)", task.Uuid)
+			debug.Debugf("triggered %sProcessing script (uuid: %s)", processorType, task.Uuid)
 
 			if err := cmd.Start(); err != nil {
-				task.PreProcessing.Error = err.Error()
-				q.Sev.Logger().Errorf("failed to start preProcessing script (uuid: %s): %v", task.Uuid, err)
+				processor.Error = err.Error()
+				q.Sev.Logger().Errorf("failed to start %sProcessing script (uuid: %s): %v", processorType, task.Uuid, err)
 			} else {
 				if err := cmd.Wait(); err != nil {
-					task.PreProcessing.Error = err.Error()
-					q.Sev.Logger().Errorf("failed preProcessing script (uuid: %s): %v", task.Uuid, err)
+					processor.Error = err.Error()
+					q.Sev.Logger().Errorf("failed %sProcessing script (uuid: %s): %v", processorType, task.Uuid, err)
 				}
 
 			}
 		}
 
-		task.PreProcessing.FinishedAt = time.Now().UnixMilli()
-		if task.PreProcessing.Error != "" {
-			q.Sev.Logger().Infof("finished preProcessing with error (uuid: %s)", task.Uuid)
-			return errors.New(task.PreProcessing.Error)
+		processor.FinishedAt = time.Now().UnixMilli()
+		if processor.Error != "" {
+			q.Sev.Logger().Infof("finished %sProcessing with error (uuid: %s)", processorType, task.Uuid)
+			return errors.New(processor.Error)
 		}
-		q.Sev.Logger().Infof("finished preProcessing (uuid: %s)", task.Uuid)
-	}
-	return nil
-}
-
-func (q *Queue) postProcessTask(task *model.Task) error {
-	if task.PostProcessing != nil && (task.PostProcessing.SidecarPath != nil || task.PostProcessing.ScriptPath != nil) {
-		q.Sev.Logger().Infof("starting postProcessing (uuid: %s)", task.Uuid)
-		task.PostProcessing.StartedAt = time.Now().UnixMilli()
-		task.Status = dto.POST_PROCESSING
-		q.updateTask(task)
-		if task.PostProcessing.SidecarPath != nil && task.PostProcessing.SidecarPath.Raw != "" {
-			b, err := json.Marshal(task.ToDto())
-			if err != nil {
-				q.Sev.Logger().Errorf("failed to marshal task to write sidecar file: %v", err)
-			} else {
-				task.PostProcessing.SidecarPath.Resolved = wildcards.Replace(task.PostProcessing.SidecarPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, false)
-				q.updateTask(task)
-				err = os.WriteFile(task.PostProcessing.SidecarPath.Resolved, b, 0644)
-				if err != nil {
-					task.PostProcessing.Error = fmt.Errorf("failed to write sidecar: %v", err).Error()
-					q.Sev.Logger().Errorf("failed to write sidecar file: %v", err)
-				} else {
-					debug.Debugf("wrote sidecar file (uuid: %s)", task.Uuid)
-				}
-			}
-		}
-
-		if task.PostProcessing.Error == "" && task.PostProcessing.ScriptPath != nil && task.PostProcessing.ScriptPath.Raw != "" {
-			task.PostProcessing.ScriptPath.Resolved = wildcards.Replace(task.PostProcessing.ScriptPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, true)
-			q.updateTask(task)
-			args := ffmpeg.SplitCommand(task.PostProcessing.ScriptPath.Resolved)
-			cmd := exec.Command(args[0], args[1:]...)
-			debug.Debugf("triggered postProcessing script (uuid: %s)", task.Uuid)
-
-			if err := cmd.Start(); err != nil {
-				task.PostProcessing.Error = err.Error()
-				q.Sev.Logger().Errorf("failed to start postProcessing script (uuid: %s): %v", task.Uuid, err)
-			} else {
-				if err := cmd.Wait(); err != nil {
-					task.PostProcessing.Error = err.Error()
-					q.Sev.Logger().Errorf("failed postProcessing script (uuid: %s): %v", task.Uuid, err)
-				}
-
-			}
-		}
-
-		task.PostProcessing.FinishedAt = time.Now().UnixMilli()
-		if task.PostProcessing.Error != "" {
-			q.Sev.Logger().Infof("finished postProcessing with error (uuid: %s)", task.Uuid)
-			return errors.New(task.PostProcessing.Error)
-		}
-		q.Sev.Logger().Infof("finished postProcessing (uuid: %s)", task.Uuid)
-		return nil
+		q.Sev.Logger().Infof("finished %sProcessing (uuid: %s)", processorType, task.Uuid)
 	}
 	return nil
 }
