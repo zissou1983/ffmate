@@ -102,10 +102,10 @@ func (s *TaskService) NewTask(task *dto.NewTask, batch string) (*model.Task, err
 			task.Priority = preset.Priority
 		}
 		if preset.PreProcessing != nil && task.PreProcessing == nil {
-			task.PreProcessing = &dto.NewPrePostProcessing{ScriptPath: preset.PreProcessing.ScriptPath, SidecarPath: preset.PreProcessing.ScriptPath}
+			task.PreProcessing = &dto.NewPrePostProcessing{ScriptPath: preset.PreProcessing.ScriptPath, SidecarPath: preset.PreProcessing.SidecarPath}
 		}
 		if preset.PostProcessing != nil && task.PostProcessing == nil {
-			task.PostProcessing = &dto.NewPrePostProcessing{ScriptPath: preset.PostProcessing.ScriptPath, SidecarPath: preset.PostProcessing.ScriptPath}
+			task.PostProcessing = &dto.NewPrePostProcessing{ScriptPath: preset.PostProcessing.ScriptPath, SidecarPath: preset.PostProcessing.SidecarPath}
 		}
 	}
 	t, err := s.TaskRepository.Create(task, batch, "api")
