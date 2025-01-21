@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
+	"github.com/welovemedia/ffmate/internal/interceptor"
 	"github.com/welovemedia/ffmate/internal/service"
 	"github.com/welovemedia/ffmate/sev"
 	"github.com/welovemedia/ffmate/sev/exceptions"
@@ -36,11 +39,11 @@ func (c *TaskController) Setup(s *sev.Sev) {
 		WebsocketService: &service.WebsocketService{},
 	}
 	c.sev = s
-	s.Gin().GET(c.Prefix+c.getEndpoint(), c.listTasks)
+	s.Gin().GET(c.Prefix+c.getEndpoint(), interceptor.PageLimit, c.listTasks)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addTask)
 	s.Gin().POST(c.Prefix+c.getEndpoint()+"/batch", c.addTasks)
 	s.Gin().GET(c.Prefix+c.getEndpoint()+"/:uuid", c.getTask)
-	s.Gin().GET(c.Prefix+c.getEndpoint()+"/batch/:uuid", c.getTasks)
+	s.Gin().GET(c.Prefix+c.getEndpoint()+"/batch/:uuid", interceptor.PageLimit, c.getTasks)
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deleteTask)
 	s.Gin().PATCH(c.Prefix+c.getEndpoint()+"/:uuid/cancel", c.cancelTask)
 }
@@ -48,15 +51,19 @@ func (c *TaskController) Setup(s *sev.Sev) {
 // @Summary List all tasks
 // @Description List all existing tasks
 // @Tags tasks
+// @Param page query int false "the page of a pagination request (min 0)"
+// @Param perPage query int false "the amount of results of a pagination request (min 1; max: 100)"
 // @Produce json
 // @Success 200 {object} []dto.Task
 // @Router /tasks [get]
 func (c *TaskController) listTasks(gin *gin.Context) {
-	tasks, err := c.taskService.ListTasks()
+	tasks, total, err := c.taskService.ListTasks(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
 	}
+
+	gin.Header("X-Total", fmt.Sprintf("%d", total))
 
 	// Transform each task to its DTO
 	var taskDTOs = []dto.Task{}
@@ -166,11 +173,13 @@ func (c *TaskController) getTask(gin *gin.Context) {
 // @Router /tasks/batch/{uuid} [get]
 func (c *TaskController) getTasks(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	tasks, err := c.taskService.GetTasksByBatchId(uuid)
+	tasks, total, err := c.taskService.GetTasksByBatchId(uuid, gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
 	}
+
+	gin.Header("X-Total", fmt.Sprintf("%d", total))
 
 	// Transform each task to its DTO
 	var taskDTOs = []dto.Task{}

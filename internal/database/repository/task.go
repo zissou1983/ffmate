@@ -20,10 +20,13 @@ func (t *Task) Setup() {
 	}
 }
 
-func (m *Task) List() (*[]model.Task, error) {
+func (m *Task) List(page int, perPage int) (*[]model.Task, int64, error) {
+	var total int64
+	m.DB.Model(&model.Task{}).Count(&total)
+
 	var tasks = &[]model.Task{}
-	m.DB.Order("created_at DESC").Find(&tasks)
-	return tasks, m.DB.Error
+	m.DB.Order("created_at DESC").Limit(perPage).Offset(page * perPage).Find(&tasks)
+	return tasks, total, m.DB.Error
 }
 
 func (m *Task) Create(newTask *dto.NewTask, batch string, source string) (*model.Task, error) {
@@ -66,10 +69,13 @@ func (m *Task) First(uuid string) (*model.Task, error) {
 	return task, db.Error
 }
 
-func (m *Task) ByBatchId(uuid string) (*[]model.Task, error) {
+func (m *Task) ByBatchId(uuid string, page int, perPage int) (*[]model.Task, int64, error) {
+	var total int64
+	m.DB.Model(&model.Task{}).Where("batch = ?", uuid).Count(&total)
+
 	var tasks = &[]model.Task{}
-	m.DB.Order("created_at DESC").Where("batch = ?", uuid).Find(&tasks)
-	return tasks, m.DB.Error
+	m.DB.Order("created_at DESC").Where("batch = ?", uuid).Limit(perPage).Offset(page * perPage).Find(&tasks)
+	return tasks, total, m.DB.Error
 }
 
 func (m *Task) Count() (int64, error) {

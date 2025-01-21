@@ -141,6 +141,20 @@ const docTemplate = `{
                     "tasks"
                 ],
                 "summary": "List all tasks",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "the page of a pagination request (min 0)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "the amount of results of a pagination request (min 1)",
+                        "name": "perPage",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -466,6 +480,12 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "postProcessing": {
+                    "$ref": "#/definitions/dto.NewPrePostProcessing"
+                },
+                "preProcessing": {
+                    "$ref": "#/definitions/dto.NewPrePostProcessing"
+                },
                 "priority": {
                     "type": "integer"
                 }
@@ -547,10 +567,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "postProcessing": {
-                    "$ref": "#/definitions/dto.PrePostProcessing"
+                    "$ref": "#/definitions/dto.NewPrePostProcessing"
                 },
                 "preProcessing": {
-                    "$ref": "#/definitions/dto.PrePostProcessing"
+                    "$ref": "#/definitions/dto.NewPrePostProcessing"
                 },
                 "priority": {
                     "type": "integer"

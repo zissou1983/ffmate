@@ -18,16 +18,16 @@ type TaskService struct {
 	WebsocketService *WebsocketService
 }
 
-func (s *TaskService) ListTasks() (*[]model.Task, error) {
-	return s.TaskRepository.List()
+func (s *TaskService) ListTasks(page int, perPage int) (*[]model.Task, int64, error) {
+	return s.TaskRepository.List(page, perPage)
 }
 
 func (s *TaskService) GetTaskById(uuid string) (*model.Task, error) {
 	return s.TaskRepository.First(uuid)
 }
 
-func (s *TaskService) GetTasksByBatchId(uuid string) (*[]model.Task, error) {
-	return s.TaskRepository.ByBatchId(uuid)
+func (s *TaskService) GetTasksByBatchId(uuid string, page int, perPage int) (*[]model.Task, int64, error) {
+	return s.TaskRepository.ByBatchId(uuid, page, perPage)
 }
 
 func (s *TaskService) UpdateTask(task *model.Task) (*model.Task, error) {
