@@ -28,8 +28,8 @@ func (s *PresetService) FindByName(name string) (*model.Preset, error) {
 	return w, nil
 }
 
-func (s *PresetService) ListPresets() (*[]model.Preset, error) {
-	return s.PresetRepository.List()
+func (s *PresetService) ListPresets(page int, perPage int) (*[]model.Preset, int64, error) {
+	return s.PresetRepository.List(page, perPage)
 }
 
 func (s *PresetService) DeletePreset(uuid string) error {

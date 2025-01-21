@@ -15,10 +15,11 @@ func (t *Preset) Setup() {
 	t.DB.AutoMigrate(&model.Preset{})
 }
 
-func (m *Preset) List() (*[]model.Preset, error) {
+func (m *Preset) List(page int, perPage int) (*[]model.Preset, int64, error) {
+	total, _ := m.Count()
 	var presets = &[]model.Preset{}
-	m.DB.Order("created_at DESC").Find(&presets)
-	return presets, m.DB.Error
+	m.DB.Order("created_at DESC").Limit(perPage).Offset(perPage * page).Find(&presets)
+	return presets, total, m.DB.Error
 }
 
 func (m *Preset) Delete(w *model.Preset) error {

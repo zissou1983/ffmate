@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
+	"github.com/welovemedia/ffmate/internal/interceptor"
 	"github.com/welovemedia/ffmate/internal/service"
 	"github.com/welovemedia/ffmate/sev"
 	"github.com/welovemedia/ffmate/sev/exceptions"
@@ -29,7 +32,7 @@ func (c *PresetController) Setup(s *sev.Sev) {
 	c.sev = s
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deletePreset)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addPreset)
-	s.Gin().GET(c.Prefix+c.getEndpoint(), c.listPresets)
+	s.Gin().GET(c.Prefix+c.getEndpoint(), interceptor.PageLimit, c.listPresets)
 }
 
 // @Summary Delete a preset
@@ -58,11 +61,13 @@ func (c *PresetController) deletePreset(gin *gin.Context) {
 // @Success 200 {object} []dto.Preset
 // @Router /presets [get]
 func (c *PresetController) listPresets(gin *gin.Context) {
-	presets, err := c.presetService.ListPresets()
+	presets, total, err := c.presetService.ListPresets(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
 	}
+
+	gin.Header("X-Total", fmt.Sprintf("%d", total))
 
 	// Transform each preset to its DTO
 	var presetDTOs = []dto.Preset{}
