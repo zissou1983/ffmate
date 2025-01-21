@@ -70,8 +70,7 @@ func (m *Task) First(uuid string) (*model.Task, error) {
 }
 
 func (m *Task) ByBatchId(uuid string, page int, perPage int) (*[]model.Task, int64, error) {
-	var total int64
-	m.DB.Model(&model.Task{}).Where("batch = ?", uuid).Count(&total)
+	total, _ := m.Count()
 
 	var tasks = &[]model.Task{}
 	m.DB.Order("created_at DESC").Where("batch = ?", uuid).Limit(perPage).Offset(page * perPage).Find(&tasks)

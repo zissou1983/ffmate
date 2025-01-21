@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
+	"github.com/welovemedia/ffmate/internal/interceptor"
 	"github.com/welovemedia/ffmate/internal/service"
 	"github.com/welovemedia/ffmate/sev"
 	"github.com/welovemedia/ffmate/sev/exceptions"
@@ -22,7 +25,7 @@ func (c *WebhookController) Setup(s *sev.Sev) {
 	c.sev = s
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deleteWebhook)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addWebhook)
-	s.Gin().GET(c.Prefix+c.getEndpoint(), c.listWebhooks)
+	s.Gin().GET(c.Prefix+c.getEndpoint(), interceptor.PageLimit, c.listWebhooks)
 }
 
 // @Summary Delete a webhook
@@ -51,11 +54,13 @@ func (c *WebhookController) deleteWebhook(gin *gin.Context) {
 // @Success 200 {object} []dto.Webhook
 // @Router /webhooks [get]
 func (c *WebhookController) listWebhooks(gin *gin.Context) {
-	webhooks, err := c.webhookService.ListWebhooks()
+	webhooks, total, err := c.webhookService.ListWebhooks(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
 	}
+
+	gin.Header("X-Total", fmt.Sprintf("%d", total))
 
 	// Transform each webhook to its DTO
 	var webhooksDTOs = []dto.Webhook{}

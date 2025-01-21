@@ -15,10 +15,11 @@ func (t *Webhook) Setup() {
 	t.DB.AutoMigrate(&model.Webhook{})
 }
 
-func (m *Webhook) List() (*[]model.Webhook, error) {
+func (m *Webhook) List(page int, perPage int) (*[]model.Webhook, int64, error) {
+	total, _ := m.Count()
 	var webhooks = &[]model.Webhook{}
-	m.DB.Order("event ASC, created_at DESC").Find(&webhooks)
-	return webhooks, m.DB.Error
+	m.DB.Order("event ASC, created_at DESC").Limit(perPage).Offset(page * perPage).Find(&webhooks)
+	return webhooks, total, m.DB.Error
 }
 
 func (m *Webhook) First(uuid string) (*model.Webhook, error) {

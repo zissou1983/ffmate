@@ -14,8 +14,8 @@ type WebhookService struct {
 	WebhookRepository *repository.Webhook
 }
 
-func (s *WebhookService) ListWebhooks() (*[]model.Webhook, error) {
-	return s.WebhookRepository.List()
+func (s *WebhookService) ListWebhooks(page int, perPage int) (*[]model.Webhook, int64, error) {
+	return s.WebhookRepository.List(page, perPage)
 }
 
 func (s *WebhookService) DeleteWebhook(uuid string) error {
