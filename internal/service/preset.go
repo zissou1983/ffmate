@@ -15,14 +15,14 @@ type PresetService struct {
 	WebhookService   *WebhookService
 }
 
-func (s *PresetService) FindByName(name string) (*model.Preset, error) {
-	w, err := s.PresetRepository.FirstByName(name)
+func (s *PresetService) FindByUuid(uuid string) (*model.Preset, error) {
+	w, err := s.PresetRepository.FindByUuid(uuid)
 	if err != nil {
 		return nil, err
 	}
 
 	if w.Uuid == "" {
-		return nil, errors.New("preset for given name not found")
+		return nil, errors.New("preset for given uuid not found")
 	}
 
 	return w, nil
@@ -57,11 +57,6 @@ func (s *PresetService) DeletePreset(uuid string) error {
 }
 
 func (s *PresetService) NewPreset(newPreset *dto.NewPreset) (*model.Preset, error) {
-	_, err := s.FindByName(newPreset.Name)
-	if err == nil {
-		return nil, errors.New("preset with given name already exists")
-	}
-
 	w, err := s.PresetRepository.Create(newPreset)
 	s.Sev.Logger().Infof("created new preset (uuid: %s)", w.Uuid)
 

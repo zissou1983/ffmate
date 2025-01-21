@@ -93,11 +93,14 @@ func (s *TaskService) CancelTask(uuid string) (*model.Task, error) {
 
 func (s *TaskService) NewTask(task *dto.NewTask, batch string) (*model.Task, error) {
 	if task.Preset != "" {
-		preset, err := s.PresetService.FindByName(task.Preset)
+		preset, err := s.PresetService.FindByUuid(task.Preset)
 		if err != nil {
 			return nil, err
 		}
 		task.Command = preset.Command
+		if task.OutputFile == "" {
+			task.OutputFile = preset.OutputFile
+		}
 		if task.Priority == 0 {
 			task.Priority = preset.Priority
 		}

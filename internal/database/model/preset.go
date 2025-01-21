@@ -19,6 +19,8 @@ type Preset struct {
 	Command string
 	Name    string
 
+	OutputFile string
+
 	Priority uint
 
 	PreProcessing  *dto.NewPrePostProcessing `gorm:"type:json"`
@@ -34,6 +36,8 @@ func (m *Preset) ToDto() *dto.Preset {
 		Command:     m.Command,
 		Name:        m.Name,
 		Description: m.Description,
+
+		OutputFile: m.OutputFile,
 
 		Priority: m.Priority,
 

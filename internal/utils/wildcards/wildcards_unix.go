@@ -3,6 +3,7 @@
 package wildcards
 
 import (
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -13,13 +14,16 @@ import (
 
 func Replace(input string, inputFile string, outputFile string, escapePaths bool) string {
 	if escapePaths {
-		input = strings.ReplaceAll(input, "${INPUT_FILE}", strings.ReplaceAll(inputFile, " ", "\\ "))
-		input = strings.ReplaceAll(input, "${OUTPUT_FILE}", strings.ReplaceAll(outputFile, " ", "\\ "))
-	} else {
-		input = strings.ReplaceAll(input, "${INPUT_FILE}", inputFile)
-		input = strings.ReplaceAll(input, "${OUTPUT_FILE}", outputFile)
-
+		inputFile = strings.ReplaceAll(inputFile, " ", "\\ ")
+		outputFile = strings.ReplaceAll(outputFile, " ", "\\ ")
 	}
+
+	input = strings.ReplaceAll(input, "${INPUT_FILE}", inputFile)
+	input = strings.ReplaceAll(input, "${OUTPUT_FILE}", outputFile)
+	input = strings.ReplaceAll(input, "${INPUT_FILE_BASENAME}", filepath.Base(inputFile))
+	input = strings.ReplaceAll(input, "${OUTPUT_FILE_BASENAME}", filepath.Base(inputFile))
+	input = strings.ReplaceAll(input, "${INPUT_FILE_DIRNAME}", filepath.Dir(inputFile))
+	input = strings.ReplaceAll(input, "${OUTPUT_FILE_DIRNAME}", filepath.Dir(inputFile))
 
 	input = strings.ReplaceAll(input, "${DATE_YEAR}", time.Now().Format("2006"))
 	input = strings.ReplaceAll(input, "${DATE_SHORTYEAR}", time.Now().Format("06"))

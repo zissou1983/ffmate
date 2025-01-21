@@ -34,6 +34,7 @@ func (m *Preset) Create(newPreset *dto.NewPreset) (*model.Preset, error) {
 		Name:           newPreset.Name,
 		Description:    newPreset.Description,
 		Priority:       newPreset.Priority,
+		OutputFile:     newPreset.OutputFile,
 		PreProcessing:  newPreset.PreProcessing,
 		PostProcessing: newPreset.PostProcessing,
 	}
@@ -47,9 +48,9 @@ func (m *Preset) First(uuid string) (*model.Preset, error) {
 	return preset, db.Error
 }
 
-func (m *Preset) FirstByName(name string) (*model.Preset, error) {
+func (m *Preset) FindByUuid(uuid string) (*model.Preset, error) {
 	var preset *model.Preset
-	db := m.DB.Where("name", name).First(&preset)
+	db := m.DB.Where("uuid", uuid).Find(&preset)
 	return preset, db.Error
 }
 

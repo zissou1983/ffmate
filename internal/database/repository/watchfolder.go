@@ -45,13 +45,14 @@ func (m *Watchfolder) Delete(w *model.Watchfolder) error {
 
 func (m *Watchfolder) Create(newWatchfolder *dto.NewWatchfolder) (*model.Watchfolder, error) {
 	watchfolder := &model.Watchfolder{
-		Uuid:        uuid.NewString(),
-		Name:        newWatchfolder.Name,
-		Description: newWatchfolder.Description,
-		Path:        newWatchfolder.Path,
-		Interval:    newWatchfolder.Interval,
-		GrowthCheck: newWatchfolder.GrowthCheck,
-		Suspended:   false,
+		Uuid:         uuid.NewString(),
+		Name:         newWatchfolder.Name,
+		Description:  newWatchfolder.Description,
+		Preset:       newWatchfolder.Preset,
+		Path:         newWatchfolder.Path,
+		Interval:     newWatchfolder.Interval,
+		GrowthChecks: newWatchfolder.GrowthChecks,
+		Suspended:    false,
 	}
 	db := m.DB.Create(watchfolder)
 	return watchfolder, db.Error

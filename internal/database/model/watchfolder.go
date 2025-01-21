@@ -17,9 +17,11 @@ type Watchfolder struct {
 	Name        string
 	Description string
 
-	Path        string `json:"path"`
-	Interval    int    `json:"interval"`
-	GrowthCheck int    `json:"growthCheck"`
+	Path         string `json:"path"`
+	Interval     int    `json:"interval"`
+	GrowthChecks int    `json:"growthChecks"`
+
+	Preset string `json:"preset"`
 
 	Suspended bool `json:"suspended"`
 }
@@ -31,9 +33,11 @@ func (m *Watchfolder) ToDto() *dto.Watchfolder {
 		Name:        m.Name,
 		Description: m.Description,
 
-		Path:        m.Path,
-		Interval:    m.Interval,
-		GrowthCheck: m.GrowthCheck,
+		Path:         m.Path,
+		Interval:     m.Interval,
+		GrowthChecks: m.GrowthChecks,
+
+		Preset: m.Preset,
 
 		Suspended: m.Suspended,
 

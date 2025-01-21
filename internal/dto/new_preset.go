@@ -5,6 +5,8 @@ type NewPreset struct {
 
 	Priority uint `json:"priority"`
 
+	OutputFile string `json:"outputFile"`
+
 	PreProcessing  *NewPrePostProcessing `json:"preProcessing"`
 	PostProcessing *NewPrePostProcessing `json:"postProcessing"`
 
