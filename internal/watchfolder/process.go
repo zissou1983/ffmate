@@ -46,6 +46,7 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder) {
 	var mu sync.Mutex
 
 	for {
+		debug.Debugf("processing watchfolder (uuid: %s)", watchfolder.Uuid)
 		// Walk the directory
 		err := filepath.Walk(watchfolder.Path, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -84,17 +85,17 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder) {
 			w.Sev.Logger().Errorf("error walking watchfolder directory (uuid: %s): %v", watchfolder.Uuid, err)
 		}
 
-		time.Sleep(time.Duration(watchfolder.Interval))
+		time.Sleep(time.Duration(watchfolder.Interval * int(time.Second)))
 	}
 }
 
 func (w *Watchfolder) createTask(path string, watchfolder *model.Watchfolder) {
-	debug.Debugf("created new task for file: %s", path)
 	w.TaskService.NewTask(&dto.NewTask{
 		Preset:    watchfolder.Preset,
 		Name:      filepath.Base(path),
 		InputFile: path,
-	}, "")
+	}, "", "watchfolder")
+	debug.Debugf("created new task for watchfolder (uuid: %s) file: %s", watchfolder.Uuid, path)
 }
 
 // shouldProcessFile determines if a file is ready for processing based on growth attempts.

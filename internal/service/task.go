@@ -91,7 +91,7 @@ func (s *TaskService) CancelTask(uuid string) (*model.Task, error) {
 	return task, err
 }
 
-func (s *TaskService) NewTask(task *dto.NewTask, batch string) (*model.Task, error) {
+func (s *TaskService) NewTask(task *dto.NewTask, batch string, source string) (*model.Task, error) {
 	if task.Preset != "" {
 		preset, err := s.PresetService.FindByUuid(task.Preset)
 		if err != nil {
@@ -111,7 +111,7 @@ func (s *TaskService) NewTask(task *dto.NewTask, batch string) (*model.Task, err
 			task.PostProcessing = &dto.NewPrePostProcessing{ScriptPath: preset.PostProcessing.ScriptPath, SidecarPath: preset.PostProcessing.SidecarPath}
 		}
 	}
-	t, err := s.TaskRepository.Create(task, batch, "api")
+	t, err := s.TaskRepository.Create(task, batch, source)
 
 	s.Sev.Metrics().Gauge("task.created").Inc()
 	s.WebhookService.Fire(dto.TASK_CREATED, t.ToDto())
@@ -125,7 +125,7 @@ func (s *TaskService) NewTasks(tasks *[]dto.NewTask) (*[]model.Task, error) {
 	batch := uuid.NewString()
 	newTasks := []model.Task{}
 	for _, task := range *tasks {
-		t, err := s.NewTask(&task, batch)
+		t, err := s.NewTask(&task, batch, "api")
 		if err != nil {
 			return nil, err
 		}

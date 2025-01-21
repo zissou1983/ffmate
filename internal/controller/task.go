@@ -137,7 +137,7 @@ func (c *TaskController) addTask(gin *gin.Context) {
 	newTask := &dto.NewTask{}
 	c.sev.Validate().Bind(gin, newTask)
 
-	task, err := c.taskService.NewTask(newTask, "")
+	task, err := c.taskService.NewTask(newTask, "", "api")
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return

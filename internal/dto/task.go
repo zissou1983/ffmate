@@ -52,6 +52,8 @@ type Task struct {
 
 	Priority uint `json:"priority"`
 
+	Source string `json:"source,omitempty"`
+
 	PreProcessing  *PrePostProcessing `json:"preProcessing,omitempty"`
 	PostProcessing *PrePostProcessing `json:"postProcessing,omitempty"`
 

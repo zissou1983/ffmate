@@ -17,8 +17,6 @@ type Task struct {
 
 	Name string
 
-	Source string `json:"source"`
-
 	Command    *dto.RawResolved `gorm:"type:json"`
 	InputFile  *dto.RawResolved `gorm:"type:json"`
 	OutputFile *dto.RawResolved `gorm:"type:json"`
@@ -31,6 +29,8 @@ type Task struct {
 
 	PreProcessing  *dto.PrePostProcessing `gorm:"type:json"`
 	PostProcessing *dto.PrePostProcessing `gorm:"type:json"`
+
+	Source string
 
 	StartedAt  int64
 	FinishedAt int64
@@ -50,6 +50,8 @@ func (m *Task) ToDto() *dto.Task {
 		Status:   m.Status,
 		Progress: m.Progress,
 		Error:    m.Error,
+
+		Source: m.Source,
 
 		Priority: m.Priority,
 
