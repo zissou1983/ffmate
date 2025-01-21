@@ -11,6 +11,7 @@ import (
 	"github.com/welovemedia/ffmate/internal/middleware"
 	"github.com/welovemedia/ffmate/internal/queue"
 	"github.com/welovemedia/ffmate/internal/service"
+	"github.com/welovemedia/ffmate/internal/watchfolder"
 	"github.com/welovemedia/ffmate/sev"
 )
 
@@ -30,6 +31,7 @@ func Init(s *sev.Sev, concurrentTasks uint, frontend embed.FS) {
 	(&repository.Task{DB: s.DB()}).Setup()
 	(&repository.Webhook{DB: s.DB()}).Setup()
 	(&repository.Preset{DB: s.DB()}).Setup()
+	(&repository.Watchfolder{DB: s.DB()}).Setup()
 
 	// setup metrics
 	metrics := &metrics.Metrics{}
@@ -46,6 +48,7 @@ func Init(s *sev.Sev, concurrentTasks uint, frontend embed.FS) {
 	s.RegisterController(&controller.TaskController{Prefix: prefix})
 	s.RegisterController(&controller.WebhookController{Prefix: prefix})
 	s.RegisterController(&controller.PresetController{Prefix: prefix})
+	s.RegisterController(&controller.WatchfolderController{Prefix: prefix})
 	if !config.Config().Headless {
 		s.RegisterController(&controller.WebController{Prefix: prefix, Frontend: frontend})
 	}
@@ -84,4 +87,48 @@ func Init(s *sev.Sev, concurrentTasks uint, frontend embed.FS) {
 		},
 		WebsocketService:   &service.WebsocketService{},
 		MaxConcurrentTasks: concurrentTasks}).Init()
+
+	// Initialize watchfolder processor
+	(&watchfolder.Watchfolder{
+		Sev:                   s,
+		WatchfolderRepository: &repository.Watchfolder{DB: s.DB()},
+		WatchfolderService: &service.WatchfolderService{
+			Sev: s,
+			WatchfolderRepository: &repository.Watchfolder{
+				DB: s.DB(),
+			},
+			WebhookService: &service.WebhookService{
+				Sev: s,
+				WebhookRepository: &repository.Webhook{
+					DB: s.DB(),
+				},
+			},
+			WebsocketService: &service.WebsocketService{},
+		},
+		WebhookService: &service.WebhookService{
+			Sev: s,
+			WebhookRepository: &repository.Webhook{
+				DB: s.DB(),
+			},
+		},
+		TaskService: &service.TaskService{
+			Sev: s,
+			TaskRepository: &repository.Task{
+				DB: s.DB(),
+			},
+			WebhookService: &service.WebhookService{
+				Sev: s,
+				WebhookRepository: &repository.Webhook{
+					DB: s.DB(),
+				},
+			},
+			PresetService: &service.PresetService{
+				Sev: s,
+				PresetRepository: &repository.Preset{
+					DB: s.DB(),
+				},
+			},
+			WebsocketService: &service.WebsocketService{},
+		},
+		WebsocketService: &service.WebsocketService{}}).Init()
 }

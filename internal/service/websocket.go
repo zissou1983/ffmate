@@ -14,8 +14,16 @@ type Subject = string
 
 const (
 	TASK_CREATED Subject = "task:created"
-	TASK_DELETED Subject = "task:deleted"
 	TASK_UPDATED Subject = "task:updated"
+	TASK_DELETED Subject = "task:deleted"
+
+	PRESET_CREATED Subject = "preset:created"
+	PRESET_UPDATED Subject = "preset:updated"
+	PRESET_DELETED Subject = "preset:deleted"
+
+	WATCHFOLDER_CREATED Subject = "watchfolder:created"
+	WATCHFOLDER_UPDATED Subject = "watchfolder:updated"
+	WATCHFOLDER_DELETED Subject = "watchfolder:deleted"
 )
 
 type message struct {

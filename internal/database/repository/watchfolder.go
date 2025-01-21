@@ -1,0 +1,58 @@
+package repository
+
+import (
+	"github.com/google/uuid"
+	"github.com/welovemedia/ffmate/internal/database/model"
+	"github.com/welovemedia/ffmate/internal/dto"
+	"gorm.io/gorm"
+)
+
+type Watchfolder struct {
+	DB *gorm.DB
+}
+
+func (t *Watchfolder) Setup() {
+	t.DB.AutoMigrate(&model.Watchfolder{})
+}
+
+func (m *Watchfolder) List(page int, perPage int) (*[]model.Watchfolder, int64, error) {
+	total, _ := m.Count()
+	var watchfolder = &[]model.Watchfolder{}
+	if page >= 0 && perPage >= 0 {
+		m.DB.Order("created_at DESC").Limit(perPage).Offset(page * perPage).Find(&watchfolder)
+	} else {
+		m.DB.Order("created_at DESC").Find(&watchfolder)
+	}
+	return watchfolder, total, m.DB.Error
+}
+
+func (m *Watchfolder) First(uuid string) (*model.Watchfolder, error) {
+	var watchfolder = &model.Watchfolder{}
+	m.DB.Where("uuid = ?", uuid).Find(&watchfolder)
+	return watchfolder, m.DB.Error
+}
+
+func (m *Watchfolder) Count() (int64, error) {
+	var count int64
+	db := m.DB.Model(&model.Watchfolder{}).Count(&count)
+	return count, db.Error
+}
+
+func (m *Watchfolder) Delete(w *model.Watchfolder) error {
+	m.DB.Delete(w)
+	return m.DB.Error
+}
+
+func (m *Watchfolder) Create(newWatchfolder *dto.NewWatchfolder) (*model.Watchfolder, error) {
+	watchfolder := &model.Watchfolder{
+		Uuid:        uuid.NewString(),
+		Name:        newWatchfolder.Name,
+		Description: newWatchfolder.Description,
+		Path:        newWatchfolder.Path,
+		Interval:    newWatchfolder.Interval,
+		GrowthCheck: newWatchfolder.GrowthCheck,
+		Suspended:   false,
+	}
+	db := m.DB.Create(watchfolder)
+	return watchfolder, db.Error
+}

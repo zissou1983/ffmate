@@ -17,6 +17,11 @@ var gauges = map[string]prometheus.Gauge{
 	"webhook.created":  prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "webhook_created", Help: "Number of created webhooks"}),
 	"webhook.executed": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "webhook_executed", Help: "Number of executed webhooks"}),
 	"webhook.deleted":  prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "webhook_deleted", Help: "Number of deleted webhooks"}),
+
+	"watchfolder.created":  prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "watchfolder_created", Help: "Number of created watchfolders"}),
+	"watchfolder.executed": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "watchfolder_executed", Help: "Number of executed watchfolders"}),
+	"watchfolder.updated":  prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "watchfolder_updated", Help: "Number of updated watchfolder"}),
+	"watchfolder.deleted":  prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "watchfolder_deleted", Help: "Number of deleted watchfolders"}),
 }
 
 type MetricsImpl interface {
