@@ -112,6 +112,9 @@ func (s *TaskService) NewTask(task *dto.NewTask, batch string, source string) (*
 		}
 	}
 	t, err := s.TaskRepository.Create(task, batch, source)
+	if err != nil {
+		return nil, err
+	}
 
 	s.Sev.Metrics().Gauge("task.created").Inc()
 	s.WebhookService.Fire(dto.TASK_CREATED, t.ToDto())

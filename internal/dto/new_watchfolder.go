@@ -8,5 +8,7 @@ type NewWatchfolder struct {
 	Interval     int    `json:"interval"`
 	GrowthChecks int    `json:"growthChecks"`
 
+	Filter *WatchfolderFilter `json:"filter"`
+
 	Preset string `json:"preset"`
 }

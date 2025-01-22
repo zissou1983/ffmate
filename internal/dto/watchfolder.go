@@ -1,5 +1,11 @@
 package dto
 
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+)
+
 type Watchfolder struct {
 	Uuid string `json:"uuid"`
 
@@ -12,8 +18,37 @@ type Watchfolder struct {
 
 	Suspended bool `json:"suspended"`
 
+	Error string `json:"error"`
+
+	Filter *WatchfolderFilter `json:"filter"`
+
 	Preset string `json:"preset"`
 
 	CreatedAt int64 `json:"createdAt"`
 	UpdatedAt int64 `json:"updatedAt"`
+	LastCheck int64 `json:"lastCheck"`
+}
+
+type WatchfolderFilter struct {
+	Extensions *WatchfolderFilterExtensions `json:"extensions"`
+}
+
+type WatchfolderFilterExtensions struct {
+	Exclude []string `json:"exclude"`
+	Include []string `json:"include"`
+}
+
+func (n WatchfolderFilter) Value() (driver.Value, error) {
+	return json.Marshal(n)
+}
+
+func (n *WatchfolderFilter) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+	return json.Unmarshal(bytes, n)
 }

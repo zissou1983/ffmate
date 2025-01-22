@@ -13,6 +13,7 @@ type WatchfolderService struct {
 	Sev                   *sev.Sev
 	WatchfolderRepository *repository.Watchfolder
 	WebhookService        *WebhookService
+	PresetService         *PresetService
 	WebsocketService      *WebsocketService
 }
 
@@ -50,6 +51,10 @@ func (s *WatchfolderService) DeleteWatchfolder(uuid string) error {
 }
 
 func (s *WatchfolderService) NewWatchfolder(newWatchfolder *dto.NewWatchfolder) (*model.Watchfolder, error) {
+	_, err := s.PresetService.FindByUuid(newWatchfolder.Preset)
+	if err != nil {
+		return nil, err
+	}
 	t, err := s.WatchfolderRepository.Create(newWatchfolder)
 
 	s.Sev.Metrics().Gauge("watchfolder.created").Inc()

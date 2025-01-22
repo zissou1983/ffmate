@@ -63,6 +63,11 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder) {
 				return nil
 			}
 
+			// Filter extensions
+			if filterOutExtension(watchfolder, path) {
+				return nil
+			}
+
 			mu.Lock()
 			defer mu.Unlock()
 
@@ -90,12 +95,43 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder) {
 }
 
 func (w *Watchfolder) createTask(path string, watchfolder *model.Watchfolder) {
-	w.TaskService.NewTask(&dto.NewTask{
+	_, err := w.TaskService.NewTask(&dto.NewTask{
 		Preset:    watchfolder.Preset,
 		Name:      filepath.Base(path),
 		InputFile: path,
 	}, "", "watchfolder")
+	if err != nil {
+		w.Sev.Logger().Errorf("failed to create task for watchfolder (uuid: %s) file: %s: %v", watchfolder.Uuid, path, err)
+		return
+	}
 	debug.Debugf("created new task for watchfolder (uuid: %s) file: %s", watchfolder.Uuid, path)
+}
+
+func filterOutExtension(watchfolder *model.Watchfolder, path string) bool {
+	if watchfolder.Filter != nil && watchfolder.Filter.Extensions != nil {
+		if len(watchfolder.Filter.Extensions.Exclude) > 0 {
+			var exclude bool = false
+			for _, ext := range watchfolder.Filter.Extensions.Exclude {
+				if strings.HasSuffix(path, "."+ext) {
+					exclude = true
+					break
+				}
+			}
+			return exclude
+		}
+
+		if len(watchfolder.Filter.Extensions.Include) > 0 {
+			var include bool = true
+			for _, ext := range watchfolder.Filter.Extensions.Include {
+				if strings.HasSuffix(path, ext) {
+					include = false
+					break
+				}
+			}
+			return include
+		}
+	}
+	return false
 }
 
 // shouldProcessFile determines if a file is ready for processing based on growth attempts.

@@ -51,6 +51,7 @@ func (m *Watchfolder) Create(newWatchfolder *dto.NewWatchfolder) (*model.Watchfo
 		Preset:       newWatchfolder.Preset,
 		Path:         newWatchfolder.Path,
 		Interval:     newWatchfolder.Interval,
+		Filter:       newWatchfolder.Filter,
 		GrowthChecks: newWatchfolder.GrowthChecks,
 		Suspended:    false,
 	}

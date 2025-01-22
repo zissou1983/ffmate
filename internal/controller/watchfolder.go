@@ -28,6 +28,14 @@ func (c *WatchfolderController) Setup(s *sev.Sev) {
 			Sev:               s,
 			WebhookRepository: &repository.Webhook{DB: s.DB()},
 		},
+		PresetService: &service.PresetService{
+			Sev:              s,
+			PresetRepository: &repository.Preset{DB: s.DB()},
+			WebhookService: &service.WebhookService{
+				Sev:               s,
+				WebhookRepository: &repository.Webhook{DB: s.DB()},
+			},
+		},
 		WebsocketService: &service.WebsocketService{},
 	}
 	c.sev = s

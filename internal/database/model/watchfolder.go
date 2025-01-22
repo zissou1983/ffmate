@@ -21,6 +21,8 @@ type Watchfolder struct {
 	Interval     int    `json:"interval"`
 	GrowthChecks int    `json:"growthChecks"`
 
+	Filter *dto.WatchfolderFilter `json:"filter"`
+
 	Preset string `json:"preset"`
 
 	Suspended bool `json:"suspended"`
@@ -38,6 +40,8 @@ func (m *Watchfolder) ToDto() *dto.Watchfolder {
 		GrowthChecks: m.GrowthChecks,
 
 		Preset: m.Preset,
+
+		Filter: m.Filter,
 
 		Suspended: m.Suspended,
 
