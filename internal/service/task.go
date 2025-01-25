@@ -16,8 +16,8 @@ type taskSvc struct {
 	taskRepository *repository.Task
 }
 
-func (s *taskSvc) ListTasks(page int, perPage int) (*[]model.Task, int64, error) {
-	return s.taskRepository.List(page, perPage)
+func (s *taskSvc) ListTasks(page int, perPage int, status string) (*[]model.Task, int64, error) {
+	return s.taskRepository.List(page, perPage, status)
 }
 
 func (s *taskSvc) GetTaskById(uuid string) (*model.Task, error) {

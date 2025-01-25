@@ -19,7 +19,7 @@ type TaskController struct {
 
 func (c *TaskController) Setup(s *sev.Sev) {
 	c.sev = s
-	s.Gin().GET(c.Prefix+c.getEndpoint(), interceptor.PageLimit, c.listTasks)
+	s.Gin().GET(c.Prefix+c.getEndpoint(), interceptor.PageLimit, interceptor.TaskStatus, c.listTasks)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addTask)
 	s.Gin().POST(c.Prefix+c.getEndpoint()+"/batch", c.addTasks)
 	s.Gin().GET(c.Prefix+c.getEndpoint()+"/:uuid", c.getTask)
@@ -37,7 +37,7 @@ func (c *TaskController) Setup(s *sev.Sev) {
 // @Success 200 {object} []dto.Task
 // @Router /tasks [get]
 func (c *TaskController) listTasks(gin *gin.Context) {
-	tasks, total, err := service.TaskService().ListTasks(gin.GetInt("page"), gin.GetInt("perPage"))
+	tasks, total, err := service.TaskService().ListTasks(gin.GetInt("page"), gin.GetInt("perPage"), gin.GetString("status"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return

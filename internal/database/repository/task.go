@@ -20,12 +20,17 @@ func (t *Task) Setup() {
 	}
 }
 
-func (m *Task) List(page int, perPage int) (*[]model.Task, int64, error) {
+func (m *Task) List(page int, perPage int, status string) (*[]model.Task, int64, error) {
 	var total int64
-	m.DB.Model(&model.Task{}).Count(&total)
-
 	var tasks = &[]model.Task{}
-	m.DB.Order("created_at DESC").Limit(perPage).Offset(page * perPage).Find(&tasks)
+	if status != "" {
+		m.DB.Model(&model.Task{}).Where("status = ?", status).Count(&total)
+		m.DB.Order("created_at DESC").Where("status = ?", status).Limit(perPage).Offset(page * perPage).Find(&tasks)
+	} else {
+		m.DB.Model(&model.Task{}).Count(&total)
+		m.DB.Order("created_at DESC").Limit(perPage).Offset(page * perPage).Find(&tasks)
+	}
+
 	return tasks, total, m.DB.Error
 }
 
