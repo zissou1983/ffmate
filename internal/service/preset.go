@@ -51,7 +51,8 @@ func (s *presetSvc) DeletePreset(uuid string) error {
 	s.sev.Logger().Infof("deleted preset (uuid: %s)", w.Uuid)
 
 	s.sev.Metrics().Gauge("preset.deleted").Inc()
-	WebhookService().Fire(dto.PRESET_DELETED, w)
+	WebhookService().Fire(dto.PRESET_DELETED, w.ToDto())
+	WebsocketService().Broadcast(PRESET_DELETED, w.ToDto())
 
 	return nil
 }
@@ -61,7 +62,8 @@ func (s *presetSvc) NewPreset(newPreset *dto.NewPreset) (*model.Preset, error) {
 	s.sev.Logger().Infof("created new preset (uuid: %s)", w.Uuid)
 
 	s.sev.Metrics().Gauge("preset.created").Inc()
-	WebhookService().Fire(dto.PRESET_CREATED, w)
+	WebhookService().Fire(dto.PRESET_CREATED, w.ToDto())
+	WebsocketService().Broadcast(PRESET_CREATED, w.ToDto())
 
 	return w, err
 }
