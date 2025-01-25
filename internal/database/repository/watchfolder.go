@@ -43,6 +43,11 @@ func (m *Watchfolder) Delete(w *model.Watchfolder) error {
 	return m.DB.Error
 }
 
+func (m *Watchfolder) Update(w *model.Watchfolder) (*model.Watchfolder, error) {
+	m.DB.Save(w)
+	return w, m.DB.Error
+}
+
 func (m *Watchfolder) Create(newWatchfolder *dto.NewWatchfolder) (*model.Watchfolder, error) {
 	watchfolder := &model.Watchfolder{
 		Uuid:         uuid.NewString(),

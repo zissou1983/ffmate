@@ -29,6 +29,16 @@ func (s *watchfolderSvc) GetWatchfolderById(uuid string) (*model.Watchfolder, er
 	return s.watchfolderRepository.First(uuid)
 }
 
+func (s *watchfolderSvc) UpdateWatchfolder(watchfolder *model.Watchfolder) (*model.Watchfolder, error) {
+	w, err := s.watchfolderRepository.Update(watchfolder)
+	if err == nil {
+		s.sev.Metrics().Gauge("watchfolder.updated").Inc()
+		WebhookService().Fire(dto.WATCHFOLDER_UPDATED, w.ToDto())
+		WebsocketService().Broadcast(WATCHFOLDER_UPDATED, w.ToDto())
+	}
+	return w, err
+}
+
 func (s *watchfolderSvc) DeleteWatchfolder(uuid string) error {
 	w, err := s.watchfolderRepository.First(uuid)
 	if err != nil {

@@ -24,7 +24,9 @@ type Watchfolder struct {
 
 	CreatedAt int64 `json:"createdAt"`
 	UpdatedAt int64 `json:"updatedAt"`
-	LastCheck int64 `json:"lastCheck"`
+
+	Error     string `json:"error,omitempty"`
+	LastCheck int64  `json:"lastCheck"`
 }
 
 type WatchfolderFilter struct {

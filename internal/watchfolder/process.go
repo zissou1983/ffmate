@@ -82,6 +82,9 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Contex
 		default:
 		}
 		debug.Debugf("processing watchfolder (uuid: %s)", watchfolder.Uuid)
+		watchfolder.LastCheck = time.Now().UnixMilli()
+		watchfolder.Error = ""
+
 		// Walk the directory
 		err := filepath.Walk(watchfolder.Path, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -122,9 +125,11 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Contex
 		})
 
 		if err != nil {
+			watchfolder.Error = err.Error()
 			w.Sev.Logger().Errorf("error walking watchfolder directory (uuid: %s): %v", watchfolder.Uuid, err)
 		}
 
+		service.WatchfolderService().UpdateWatchfolder(watchfolder)
 		time.Sleep(time.Duration(watchfolder.Interval * int(time.Second)))
 	}
 }
