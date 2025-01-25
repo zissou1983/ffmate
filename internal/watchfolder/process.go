@@ -19,11 +19,7 @@ import (
 
 type Watchfolder struct {
 	Sev                   *sev.Sev
-	WatchfolderService    *service.WatchfolderService
 	WatchfolderRepository *repository.Watchfolder
-	WebhookService        *service.WebhookService
-	WebsocketService      *service.WebsocketService
-	TaskService           *service.TaskService
 }
 
 var debug = debugo.New("watchfolder")
@@ -51,7 +47,7 @@ func (w *Watchfolder) Init() {
 func (w *Watchfolder) monitorWatchfolderUpdates() {
 	for {
 		select {
-		case watchfolder := <-w.WatchfolderService.GetWatchfolderUpdates():
+		case watchfolder := <-service.WatchfolderService().GetWatchfolderUpdates():
 			if cancel, ok := watchfolderCtx[watchfolder.Uuid]; ok {
 				// cancel running watchfolder if found and remove context
 				if !watchfolder.Suspended && !watchfolder.DeletedAt.Valid {
@@ -134,7 +130,7 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Contex
 }
 
 func (w *Watchfolder) createTask(path string, watchfolder *model.Watchfolder) {
-	_, err := w.TaskService.NewTask(&dto.NewTask{
+	_, err := service.TaskService().NewTask(&dto.NewTask{
 		Preset:    watchfolder.Preset,
 		Name:      filepath.Base(path),
 		InputFile: path,

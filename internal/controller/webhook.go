@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
 	"github.com/welovemedia/ffmate/internal/interceptor"
 	"github.com/welovemedia/ffmate/internal/service"
@@ -14,14 +13,12 @@ import (
 
 type WebhookController struct {
 	sev.Controller
-	sev            *sev.Sev
-	webhookService *service.WebhookService
+	sev *sev.Sev
 
 	Prefix string
 }
 
 func (c *WebhookController) Setup(s *sev.Sev) {
-	c.webhookService = &service.WebhookService{Sev: s, WebhookRepository: &repository.Webhook{DB: s.DB()}}
 	c.sev = s
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deleteWebhook)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addWebhook)
@@ -37,7 +34,7 @@ func (c *WebhookController) Setup(s *sev.Sev) {
 // @Router /webhooks/{uuid} [delete]
 func (c *WebhookController) deleteWebhook(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	err := c.webhookService.DeleteWebhook(uuid)
+	err := service.WebhookService().DeleteWebhook(uuid)
 
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
@@ -54,7 +51,7 @@ func (c *WebhookController) deleteWebhook(gin *gin.Context) {
 // @Success 200 {object} []dto.Webhook
 // @Router /webhooks [get]
 func (c *WebhookController) listWebhooks(gin *gin.Context) {
-	webhooks, total, err := c.webhookService.ListWebhooks(gin.GetInt("page"), gin.GetInt("perPage"))
+	webhooks, total, err := service.WebhookService().ListWebhooks(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -83,7 +80,7 @@ func (c *WebhookController) addWebhook(gin *gin.Context) {
 	newWebhook := &dto.NewWebhook{}
 	c.sev.Validate().Bind(gin, newWebhook)
 
-	webhook, err := c.webhookService.NewWebhook(newWebhook)
+	webhook, err := service.WebhookService().NewWebhook(newWebhook)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return

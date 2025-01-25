@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
 	"github.com/welovemedia/ffmate/internal/interceptor"
 	"github.com/welovemedia/ffmate/internal/service"
@@ -14,30 +13,12 @@ import (
 
 type WatchfolderController struct {
 	sev.Controller
-	sev                *sev.Sev
-	watchfolderService *service.WatchfolderService
+	sev *sev.Sev
 
 	Prefix string
 }
 
 func (c *WatchfolderController) Setup(s *sev.Sev) {
-	c.watchfolderService = &service.WatchfolderService{
-		Sev:                   s,
-		WatchfolderRepository: &repository.Watchfolder{DB: s.DB()},
-		WebhookService: &service.WebhookService{
-			Sev:               s,
-			WebhookRepository: &repository.Webhook{DB: s.DB()},
-		},
-		PresetService: &service.PresetService{
-			Sev:              s,
-			PresetRepository: &repository.Preset{DB: s.DB()},
-			WebhookService: &service.WebhookService{
-				Sev:               s,
-				WebhookRepository: &repository.Webhook{DB: s.DB()},
-			},
-		},
-		WebsocketService: &service.WebsocketService{},
-	}
 	c.sev = s
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deleteWatchfolder)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addWatchfolder)
@@ -54,7 +35,7 @@ func (c *WatchfolderController) Setup(s *sev.Sev) {
 // @Router /watchfolder/{uuid} [get]
 func (c *WatchfolderController) getWatchfolder(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	task, err := c.watchfolderService.GetWatchfolderById(uuid)
+	task, err := service.WatchfolderService().GetWatchfolderById(uuid)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -72,7 +53,7 @@ func (c *WatchfolderController) getWatchfolder(gin *gin.Context) {
 // @Router /watchfolders/{uuid} [delete]
 func (c *WatchfolderController) deleteWatchfolder(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	err := c.watchfolderService.DeleteWatchfolder(uuid)
+	err := service.WatchfolderService().DeleteWatchfolder(uuid)
 
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
@@ -89,7 +70,7 @@ func (c *WatchfolderController) deleteWatchfolder(gin *gin.Context) {
 // @Success 200 {object} []dto.Watchfolder
 // @Router /watchfolders [get]
 func (c *WatchfolderController) listWatchfolders(gin *gin.Context) {
-	watchfolders, total, err := c.watchfolderService.ListWatchfolders(gin.GetInt("page"), gin.GetInt("perPage"))
+	watchfolders, total, err := service.WatchfolderService().ListWatchfolders(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -118,7 +99,7 @@ func (c *WatchfolderController) addWatchfolder(gin *gin.Context) {
 	newWatchfolder := &dto.NewWatchfolder{}
 	c.sev.Validate().Bind(gin, newWatchfolder)
 
-	watchfolder, err := c.watchfolderService.NewWatchfolder(newWatchfolder)
+	watchfolder, err := service.WatchfolderService().NewWatchfolder(newWatchfolder)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return

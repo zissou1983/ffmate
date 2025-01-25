@@ -21,9 +21,6 @@ import (
 type Queue struct {
 	Sev                *sev.Sev
 	TaskRepository     *repository.Task
-	TaskService        *service.TaskService
-	WebhookService     *service.WebhookService
-	WebsocketService   *service.WebsocketService
 	MaxConcurrentTasks uint
 }
 
@@ -172,5 +169,5 @@ func (q *Queue) failTask(task *model.Task, err error) {
 }
 
 func (q *Queue) updateTask(task *model.Task) {
-	q.TaskService.UpdateTask(task)
+	service.TaskService().UpdateTask(task)
 }

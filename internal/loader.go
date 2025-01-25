@@ -44,6 +44,9 @@ func Init(s *sev.Sev, concurrentTasks uint, frontend embed.FS) {
 	s.RegisterMiddleware("debugo", middleware.Debugo)
 	s.RegisterMiddleware("version", middleware.Version)
 
+	// setup services
+	service.Init(s)
+
 	// setup controllers
 	s.RegisterController(&controller.TaskController{Prefix: prefix})
 	s.RegisterController(&controller.WebhookController{Prefix: prefix})
@@ -58,77 +61,12 @@ func Init(s *sev.Sev, concurrentTasks uint, frontend embed.FS) {
 
 	// Initialize queue processor
 	(&queue.Queue{
-		Sev:            s,
-		TaskRepository: &repository.Task{DB: s.DB()},
-		TaskService: &service.TaskService{
-			Sev: s,
-			TaskRepository: &repository.Task{
-				DB: s.DB(),
-			},
-			WebhookService: &service.WebhookService{
-				Sev: s,
-				WebhookRepository: &repository.Webhook{
-					DB: s.DB(),
-				},
-			},
-			PresetService: &service.PresetService{
-				Sev: s,
-				PresetRepository: &repository.Preset{
-					DB: s.DB(),
-				},
-			},
-			WebsocketService: &service.WebsocketService{},
-		},
-		WebhookService: &service.WebhookService{
-			Sev: s,
-			WebhookRepository: &repository.Webhook{
-				DB: s.DB(),
-			},
-		},
-		WebsocketService:   &service.WebsocketService{},
+		Sev:                s,
+		TaskRepository:     &repository.Task{DB: s.DB()},
 		MaxConcurrentTasks: concurrentTasks}).Init()
 
 	// Initialize watchfolder processor
 	(&watchfolder.Watchfolder{
 		Sev:                   s,
-		WatchfolderRepository: &repository.Watchfolder{DB: s.DB()},
-		WatchfolderService: &service.WatchfolderService{
-			Sev: s,
-			WatchfolderRepository: &repository.Watchfolder{
-				DB: s.DB(),
-			},
-			WebhookService: &service.WebhookService{
-				Sev: s,
-				WebhookRepository: &repository.Webhook{
-					DB: s.DB(),
-				},
-			},
-			WebsocketService: &service.WebsocketService{},
-		},
-		WebhookService: &service.WebhookService{
-			Sev: s,
-			WebhookRepository: &repository.Webhook{
-				DB: s.DB(),
-			},
-		},
-		TaskService: &service.TaskService{
-			Sev: s,
-			TaskRepository: &repository.Task{
-				DB: s.DB(),
-			},
-			WebhookService: &service.WebhookService{
-				Sev: s,
-				WebhookRepository: &repository.Webhook{
-					DB: s.DB(),
-				},
-			},
-			PresetService: &service.PresetService{
-				Sev: s,
-				PresetRepository: &repository.Preset{
-					DB: s.DB(),
-				},
-			},
-			WebsocketService: &service.WebsocketService{},
-		},
-		WebsocketService: &service.WebsocketService{}}).Init()
+		WatchfolderRepository: &repository.Watchfolder{DB: s.DB()}}).Init()
 }

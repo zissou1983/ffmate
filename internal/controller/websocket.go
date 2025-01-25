@@ -23,14 +23,12 @@ var upgrader = websocket.Upgrader{
 
 type WebsocketController struct {
 	sev.Controller
-	sev              *sev.Sev
-	websocketService *service.WebsocketService
+	sev *sev.Sev
 
 	Prefix string
 }
 
 func (c *WebsocketController) Setup(s *sev.Sev) {
-	c.websocketService = &service.WebsocketService{}
 	c.sev = s
 	s.Gin().GET(c.Prefix+c.getEndpoint(), c.websocket)
 }
@@ -44,9 +42,9 @@ func (c *WebsocketController) websocket(gin *gin.Context) {
 	uuid := uuid.NewString()
 
 	defer conn.Close()
-	defer c.websocketService.RemoveConnection(uuid, conn)
+	defer service.WebsocketService().RemoveConnection(uuid, conn)
 
-	c.websocketService.AddConnection(uuid, conn)
+	service.WebsocketService().AddConnection(uuid, conn)
 
 	debug.Debugf("new connection from %s (uuid: %s)", gin.RemoteIP(), uuid)
 

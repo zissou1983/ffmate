@@ -10,36 +10,34 @@ import (
 	"github.com/welovemedia/ffmate/sev"
 )
 
-type TaskService struct {
-	Sev              *sev.Sev
-	TaskRepository   *repository.Task
-	WebhookService   *WebhookService
-	PresetService    *PresetService
-	WebsocketService *WebsocketService
+type taskSvc struct {
+	service
+	sev            *sev.Sev
+	taskRepository *repository.Task
 }
 
-func (s *TaskService) ListTasks(page int, perPage int) (*[]model.Task, int64, error) {
-	return s.TaskRepository.List(page, perPage)
+func (s *taskSvc) ListTasks(page int, perPage int) (*[]model.Task, int64, error) {
+	return s.taskRepository.List(page, perPage)
 }
 
-func (s *TaskService) GetTaskById(uuid string) (*model.Task, error) {
-	return s.TaskRepository.First(uuid)
+func (s *taskSvc) GetTaskById(uuid string) (*model.Task, error) {
+	return s.taskRepository.First(uuid)
 }
 
-func (s *TaskService) GetTasksByBatchId(uuid string, page int, perPage int) (*[]model.Task, int64, error) {
-	return s.TaskRepository.ByBatchId(uuid, page, perPage)
+func (s *taskSvc) GetTasksByBatchId(uuid string, page int, perPage int) (*[]model.Task, int64, error) {
+	return s.taskRepository.ByBatchId(uuid, page, perPage)
 }
 
-func (s *TaskService) UpdateTask(task *model.Task) (*model.Task, error) {
-	task, err := s.TaskRepository.UpdateTask(task)
-	s.WebsocketService.Broadcast(TASK_UPDATED, task.ToDto())
-	s.Sev.Metrics().Gauge("task.updated").Inc()
-	s.WebhookService.Fire(dto.TASK_UPDATED, task.ToDto())
+func (s *taskSvc) UpdateTask(task *model.Task) (*model.Task, error) {
+	task, err := s.taskRepository.UpdateTask(task)
+	WebsocketService().Broadcast(TASK_UPDATED, task.ToDto())
+	s.sev.Metrics().Gauge("task.updated").Inc()
+	WebhookService().Fire(dto.TASK_UPDATED, task.ToDto())
 	return task, err
 }
 
-func (s *TaskService) DeleteTask(uuid string) error {
-	w, err := s.TaskRepository.First(uuid)
+func (s *taskSvc) DeleteTask(uuid string) error {
+	w, err := s.taskRepository.First(uuid)
 	if err != nil {
 		return err
 	}
@@ -52,23 +50,23 @@ func (s *TaskService) DeleteTask(uuid string) error {
 		return errors.New("running tasks can not be deleted, cancel first")
 	}
 
-	err = s.TaskRepository.Delete(w)
+	err = s.taskRepository.Delete(w)
 	if err != nil {
-		s.Sev.Logger().Warnf("failed to delete task (uuid: %s): %+v", w.Uuid, err)
+		s.sev.Logger().Warnf("failed to delete task (uuid: %s): %+v", w.Uuid, err)
 		return err
 	}
 
-	s.Sev.Logger().Infof("deleted task (uuid: %s)", w.Uuid)
+	s.sev.Logger().Infof("deleted task (uuid: %s)", w.Uuid)
 
-	s.Sev.Metrics().Gauge("task.deleted").Inc()
-	s.WebhookService.Fire(dto.TASK_DELETED, w.ToDto())
-	s.WebsocketService.Broadcast(TASK_DELETED, w.ToDto())
+	s.sev.Metrics().Gauge("task.deleted").Inc()
+	WebhookService().Fire(dto.TASK_DELETED, w.ToDto())
+	WebsocketService().Broadcast(TASK_DELETED, w.ToDto())
 
 	return nil
 }
 
-func (s *TaskService) CancelTask(uuid string) (*model.Task, error) {
-	t, err := s.TaskRepository.First(uuid)
+func (s *taskSvc) CancelTask(uuid string) (*model.Task, error) {
+	t, err := s.taskRepository.First(uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -79,21 +77,21 @@ func (s *TaskService) CancelTask(uuid string) (*model.Task, error) {
 
 	t.Progress = 100
 	t.Status = dto.DONE_CANCELED
-	task, err := s.TaskRepository.UpdateTask(t)
+	task, err := s.taskRepository.UpdateTask(t)
 	if err != nil {
 		return nil, err
 	}
 
-	s.Sev.Metrics().Gauge("task.updated").Inc()
-	s.WebhookService.Fire(dto.TASK_UPDATED, task.ToDto())
-	s.WebsocketService.Broadcast(TASK_UPDATED, task.ToDto())
+	s.sev.Metrics().Gauge("task.updated").Inc()
+	WebhookService().Fire(dto.TASK_UPDATED, task.ToDto())
+	WebsocketService().Broadcast(TASK_UPDATED, task.ToDto())
 
 	return task, err
 }
 
-func (s *TaskService) NewTask(task *dto.NewTask, batch string, source string) (*model.Task, error) {
+func (s *taskSvc) NewTask(task *dto.NewTask, batch string, source string) (*model.Task, error) {
 	if task.Preset != "" {
-		preset, err := s.PresetService.FindByUuid(task.Preset)
+		preset, err := PresetService().FindByUuid(task.Preset)
 		if err != nil {
 			return nil, err
 		}
@@ -111,20 +109,20 @@ func (s *TaskService) NewTask(task *dto.NewTask, batch string, source string) (*
 			task.PostProcessing = &dto.NewPrePostProcessing{ScriptPath: preset.PostProcessing.ScriptPath, SidecarPath: preset.PostProcessing.SidecarPath}
 		}
 	}
-	t, err := s.TaskRepository.Create(task, batch, source)
+	t, err := s.taskRepository.Create(task, batch, source)
 	if err != nil {
 		return nil, err
 	}
 
-	s.Sev.Metrics().Gauge("task.created").Inc()
-	s.WebhookService.Fire(dto.TASK_CREATED, t.ToDto())
-	s.WebsocketService.Broadcast(TASK_CREATED, t.ToDto())
+	s.sev.Metrics().Gauge("task.created").Inc()
+	WebhookService().Fire(dto.TASK_CREATED, t.ToDto())
+	WebsocketService().Broadcast(TASK_CREATED, t.ToDto())
 
-	s.Sev.Logger().Infof("new task added to queue (uuid: %s)", t.Uuid)
+	s.sev.Logger().Infof("new task added to queue (uuid: %s)", t.Uuid)
 	return t, err
 }
 
-func (s *TaskService) NewTasks(tasks *[]dto.NewTask) (*[]model.Task, error) {
+func (s *taskSvc) NewTasks(tasks *[]dto.NewTask) (*[]model.Task, error) {
 	batch := uuid.NewString()
 	newTasks := []model.Task{}
 	for _, task := range *tasks {
@@ -142,7 +140,7 @@ func (s *TaskService) NewTasks(tasks *[]dto.NewTask) (*[]model.Task, error) {
 		taskDTOs = append(taskDTOs, *task.ToDto())
 	}
 
-	s.Sev.Metrics().Gauge("batch.created").Inc()
-	s.WebhookService.Fire(dto.BATCH_CREATED, taskDTOs)
+	s.sev.Metrics().Gauge("batch.created").Inc()
+	WebhookService().Fire(dto.BATCH_CREATED, taskDTOs)
 	return &newTasks, nil
 }

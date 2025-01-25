@@ -9,14 +9,14 @@ import (
 	"github.com/welovemedia/ffmate/sev"
 )
 
-type PresetService struct {
-	Sev              *sev.Sev
-	PresetRepository *repository.Preset
-	WebhookService   *WebhookService
+type presetSvc struct {
+	service
+	sev              *sev.Sev
+	presetRepository *repository.Preset
 }
 
-func (s *PresetService) FindByUuid(uuid string) (*model.Preset, error) {
-	w, err := s.PresetRepository.FindByUuid(uuid)
+func (s *presetSvc) FindByUuid(uuid string) (*model.Preset, error) {
+	w, err := s.presetRepository.FindByUuid(uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -28,12 +28,12 @@ func (s *PresetService) FindByUuid(uuid string) (*model.Preset, error) {
 	return w, nil
 }
 
-func (s *PresetService) ListPresets(page int, perPage int) (*[]model.Preset, int64, error) {
-	return s.PresetRepository.List(page, perPage)
+func (s *presetSvc) ListPresets(page int, perPage int) (*[]model.Preset, int64, error) {
+	return s.presetRepository.List(page, perPage)
 }
 
-func (s *PresetService) DeletePreset(uuid string) error {
-	w, err := s.PresetRepository.First(uuid)
+func (s *presetSvc) DeletePreset(uuid string) error {
+	w, err := s.presetRepository.First(uuid)
 	if err != nil {
 		return err
 	}
@@ -42,26 +42,26 @@ func (s *PresetService) DeletePreset(uuid string) error {
 		return errors.New("preset for given uuid not found")
 	}
 
-	err = s.PresetRepository.Delete(w)
+	err = s.presetRepository.Delete(w)
 	if err != nil {
-		s.Sev.Logger().Warnf("failed to delete preset (uuid: %s): %+v", w.Uuid, err)
+		s.sev.Logger().Warnf("failed to delete preset (uuid: %s): %+v", w.Uuid, err)
 		return err
 	}
 
-	s.Sev.Logger().Infof("deleted preset (uuid: %s)", w.Uuid)
+	s.sev.Logger().Infof("deleted preset (uuid: %s)", w.Uuid)
 
-	s.Sev.Metrics().Gauge("preset.deleted").Inc()
-	s.WebhookService.Fire(dto.PRESET_DELETED, w)
+	s.sev.Metrics().Gauge("preset.deleted").Inc()
+	WebhookService().Fire(dto.PRESET_DELETED, w)
 
 	return nil
 }
 
-func (s *PresetService) NewPreset(newPreset *dto.NewPreset) (*model.Preset, error) {
-	w, err := s.PresetRepository.Create(newPreset)
-	s.Sev.Logger().Infof("created new preset (uuid: %s)", w.Uuid)
+func (s *presetSvc) NewPreset(newPreset *dto.NewPreset) (*model.Preset, error) {
+	w, err := s.presetRepository.Create(newPreset)
+	s.sev.Logger().Infof("created new preset (uuid: %s)", w.Uuid)
 
-	s.Sev.Metrics().Gauge("preset.created").Inc()
-	s.WebhookService.Fire(dto.PRESET_CREATED, w)
+	s.sev.Metrics().Gauge("preset.created").Inc()
+	WebhookService().Fire(dto.PRESET_CREATED, w)
 
 	return w, err
 }

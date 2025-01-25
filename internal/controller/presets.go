@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
 	"github.com/welovemedia/ffmate/internal/interceptor"
 	"github.com/welovemedia/ffmate/internal/service"
@@ -14,21 +13,12 @@ import (
 
 type PresetController struct {
 	sev.Controller
-	sev           *sev.Sev
-	presetService *service.PresetService
+	sev *sev.Sev
 
 	Prefix string
 }
 
 func (c *PresetController) Setup(s *sev.Sev) {
-	c.presetService = &service.PresetService{
-		Sev:              s,
-		PresetRepository: &repository.Preset{DB: s.DB()},
-		WebhookService: &service.WebhookService{
-			Sev:               s,
-			WebhookRepository: &repository.Webhook{DB: s.DB()},
-		},
-	}
 	c.sev = s
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deletePreset)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addPreset)
@@ -44,7 +34,7 @@ func (c *PresetController) Setup(s *sev.Sev) {
 // @Router /presets/{uuid} [delete]
 func (c *PresetController) deletePreset(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	err := c.presetService.DeletePreset(uuid)
+	err := service.PresetService().DeletePreset(uuid)
 
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
@@ -61,7 +51,7 @@ func (c *PresetController) deletePreset(gin *gin.Context) {
 // @Success 200 {object} []dto.Preset
 // @Router /presets [get]
 func (c *PresetController) listPresets(gin *gin.Context) {
-	presets, total, err := c.presetService.ListPresets(gin.GetInt("page"), gin.GetInt("perPage"))
+	presets, total, err := service.PresetService().ListPresets(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -90,7 +80,7 @@ func (c *PresetController) addPreset(gin *gin.Context) {
 	newPreset := &dto.NewPreset{}
 	c.sev.Validate().Bind(gin, newPreset)
 
-	preset, err := c.presetService.NewPreset(newPreset)
+	preset, err := service.PresetService().NewPreset(newPreset)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return

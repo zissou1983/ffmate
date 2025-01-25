@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
 	"github.com/welovemedia/ffmate/internal/interceptor"
 	"github.com/welovemedia/ffmate/internal/service"
@@ -16,28 +15,9 @@ type TaskController struct {
 	sev.Controller
 	sev    *sev.Sev
 	Prefix string
-
-	taskService *service.TaskService
 }
 
 func (c *TaskController) Setup(s *sev.Sev) {
-	c.taskService = &service.TaskService{
-		Sev:            s,
-		TaskRepository: &repository.Task{DB: s.DB()},
-		PresetService: &service.PresetService{
-			Sev: s,
-			PresetRepository: &repository.Preset{
-				DB: s.DB(),
-			},
-		},
-		WebhookService: &service.WebhookService{
-			Sev: s,
-			WebhookRepository: &repository.Webhook{
-				DB: s.DB(),
-			},
-		},
-		WebsocketService: &service.WebsocketService{},
-	}
 	c.sev = s
 	s.Gin().GET(c.Prefix+c.getEndpoint(), interceptor.PageLimit, c.listTasks)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addTask)
@@ -57,7 +37,7 @@ func (c *TaskController) Setup(s *sev.Sev) {
 // @Success 200 {object} []dto.Task
 // @Router /tasks [get]
 func (c *TaskController) listTasks(gin *gin.Context) {
-	tasks, total, err := c.taskService.ListTasks(gin.GetInt("page"), gin.GetInt("perPage"))
+	tasks, total, err := service.TaskService().ListTasks(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -83,7 +63,7 @@ func (c *TaskController) listTasks(gin *gin.Context) {
 // @Router /tasks/{uuid} [delete]
 func (c *TaskController) deleteTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	err := c.taskService.DeleteTask(uuid)
+	err := service.TaskService().DeleteTask(uuid)
 
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
@@ -110,7 +90,7 @@ func (c *TaskController) addTasks(gin *gin.Context) {
 		c.sev.Validate().ValidateOnly(gin, &t)
 	}
 
-	tasks, err := c.taskService.NewTasks(newTasks)
+	tasks, err := service.TaskService().NewTasks(newTasks)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -137,7 +117,7 @@ func (c *TaskController) addTask(gin *gin.Context) {
 	newTask := &dto.NewTask{}
 	c.sev.Validate().Bind(gin, newTask)
 
-	task, err := c.taskService.NewTask(newTask, "", "api")
+	task, err := service.TaskService().NewTask(newTask, "", "api")
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -155,7 +135,7 @@ func (c *TaskController) addTask(gin *gin.Context) {
 // @Router /tasks/{uuid} [get]
 func (c *TaskController) getTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	task, err := c.taskService.GetTaskById(uuid)
+	task, err := service.TaskService().GetTaskById(uuid)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -173,7 +153,7 @@ func (c *TaskController) getTask(gin *gin.Context) {
 // @Router /tasks/batch/{uuid} [get]
 func (c *TaskController) getTasks(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	tasks, total, err := c.taskService.GetTasksByBatchId(uuid, gin.GetInt("page"), gin.GetInt("perPage"))
+	tasks, total, err := service.TaskService().GetTasksByBatchId(uuid, gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -199,7 +179,7 @@ func (c *TaskController) getTasks(gin *gin.Context) {
 // @Router /tasks/{uuid}/cancel [patch]
 func (c *TaskController) cancelTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	task, err := c.taskService.CancelTask(uuid)
+	task, err := service.TaskService().CancelTask(uuid)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
