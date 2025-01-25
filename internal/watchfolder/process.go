@@ -1,6 +1,8 @@
 package watchfolder
 
 import (
+	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,21 +33,58 @@ type fileState struct {
 	Attempts int
 }
 
+var watchfolderCtx = make(map[string]context.CancelCauseFunc)
+
 func (w *Watchfolder) Init() {
 	watchfolders, total, _ := w.WatchfolderRepository.List(-1, -1)
 	debug.Debugf("initializing %d watchfolders", total)
 
+	go w.monitorWatchfolderUpdates()
+
 	for _, watchfolder := range *watchfolders {
-		go w.process(&watchfolder)
+		ctx, cancel := context.WithCancelCause(context.Background())
+		watchfolderCtx[watchfolder.Uuid] = cancel
+		go w.process(&watchfolder, ctx)
 	}
 }
 
-func (w *Watchfolder) process(watchfolder *model.Watchfolder) {
+func (w *Watchfolder) monitorWatchfolderUpdates() {
+	for {
+		select {
+		case watchfolder := <-w.WatchfolderService.GetWatchfolderUpdates():
+			if cancel, ok := watchfolderCtx[watchfolder.Uuid]; ok {
+				// cancel running watchfolder if found and remove context
+				if !watchfolder.Suspended && !watchfolder.DeletedAt.Valid {
+					cancel(errors.New("updated"))
+				} else {
+					cancel(errors.New("suspended or deleted"))
+				}
+				delete(watchfolderCtx, watchfolder.Uuid)
+			}
+
+			// if update is not suspended nor deleted, start as new watchfolder
+			if !watchfolder.Suspended && !watchfolder.DeletedAt.Valid {
+				ctx, cancel := context.WithCancelCause(context.Background())
+				watchfolderCtx[watchfolder.Uuid] = cancel
+				go w.process(watchfolder, ctx)
+			}
+		}
+	}
+}
+
+func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Context) {
 	fileStates := make(map[string]*fileState)
 	processedFiles := make(map[string]bool)
 	var mu sync.Mutex
+	debug.Debugf("initialized new watchfolder watcher (uuid: %s)", watchfolder.Uuid)
 
 	for {
+		select {
+		case <-ctx.Done():
+			w.Sev.Logger().Infof("stopped watchfolder (uuid: %s): %s", watchfolder.Uuid, context.Cause(ctx))
+			return
+		default:
+		}
 		debug.Debugf("processing watchfolder (uuid: %s)", watchfolder.Uuid)
 		// Walk the directory
 		err := filepath.Walk(watchfolder.Path, func(path string, info os.FileInfo, err error) error {

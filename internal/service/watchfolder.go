@@ -17,6 +17,12 @@ type WatchfolderService struct {
 	WebsocketService      *WebsocketService
 }
 
+var watchfolderUpdates = make(chan *model.Watchfolder, 100)
+
+func (s *WatchfolderService) GetWatchfolderUpdates() chan *model.Watchfolder {
+	return watchfolderUpdates
+}
+
 func (s *WatchfolderService) ListWatchfolders(page int, perPage int) (*[]model.Watchfolder, int64, error) {
 	return s.WatchfolderRepository.List(page, perPage)
 }
@@ -41,7 +47,8 @@ func (s *WatchfolderService) DeleteWatchfolder(uuid string) error {
 		return err
 	}
 
-	s.Sev.Logger().Infof("deleted task (uuid: %s)", w.Uuid)
+	s.Sev.Logger().Infof("deleted watchfolder (uuid: %s)", w.Uuid)
+	watchfolderUpdates <- w
 
 	s.Sev.Metrics().Gauge("watchfolder.deleted").Inc()
 	s.WebhookService.Fire(dto.WATCHFOLDER_DELETED, w.ToDto())
@@ -55,12 +62,14 @@ func (s *WatchfolderService) NewWatchfolder(newWatchfolder *dto.NewWatchfolder) 
 	if err != nil {
 		return nil, err
 	}
-	t, err := s.WatchfolderRepository.Create(newWatchfolder)
+	w, err := s.WatchfolderRepository.Create(newWatchfolder)
+
+	s.Sev.Logger().Infof("created new watchfolder (uuid: %s)", w.Uuid)
+	watchfolderUpdates <- w
 
 	s.Sev.Metrics().Gauge("watchfolder.created").Inc()
-	s.WebhookService.Fire(dto.WATCHFOLDER_CREATED, t.ToDto())
-	s.WebsocketService.Broadcast(WATCHFOLDER_CREATED, t.ToDto())
+	s.WebhookService.Fire(dto.WATCHFOLDER_CREATED, w.ToDto())
+	s.WebsocketService.Broadcast(WATCHFOLDER_CREATED, w.ToDto())
 
-	s.Sev.Logger().Infof("new task added to queue (uuid: %s)", t.Uuid)
-	return t, err
+	return w, err
 }

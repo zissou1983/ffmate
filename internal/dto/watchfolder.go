@@ -18,8 +18,6 @@ type Watchfolder struct {
 
 	Suspended bool `json:"suspended"`
 
-	Error string `json:"error"`
-
 	Filter *WatchfolderFilter `json:"filter"`
 
 	Preset string `json:"preset"`
