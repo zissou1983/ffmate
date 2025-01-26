@@ -35,6 +35,14 @@ var gaugesVec = map[string]*prometheus.GaugeVec{
 		},
 		[]string{"method", "path"},
 	),
+	"umami": prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "umami",
+			Help:      "Number of requests coming from umami",
+		},
+		[]string{"url", "screen", "language"},
+	),
 }
 
 type MetricsImpl interface {

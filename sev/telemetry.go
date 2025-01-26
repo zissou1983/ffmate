@@ -3,10 +3,13 @@ package sev
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"runtime"
+	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	promDto "github.com/prometheus/client_model/go"
 	"github.com/welovemedia/ffmate/internal/config"
 )
@@ -46,6 +49,30 @@ func (s *Sev) SendTelemtry(targetUrl string, custom map[string]interface{}) {
 		g := &promDto.Metric{}
 		gauge.Write(g)
 		stats.Metrics[name] = g.Gauge.GetValue()
+	}
+	for name, gaugeVec := range s.Metrics().GaugesVec() {
+		metricChan := make(chan prometheus.Metric, 1)
+
+		go func() {
+			gaugeVec.Collect(metricChan)
+			close(metricChan)
+		}()
+
+		for metric := range metricChan {
+			promMetric := &promDto.Metric{}
+			if err := metric.Write(promMetric); err != nil {
+				fmt.Printf("Error writing metric: %v\n", err)
+				continue
+			}
+
+			labelValues := make([]string, len(promMetric.Label))
+			for i, label := range promMetric.Label {
+				labelValues[i] = fmt.Sprintf("%s=%s", *label.Name, *label.Value)
+			}
+
+			labeledName := fmt.Sprintf("%s{%s}", name, strings.Join(labelValues, ","))
+			stats.Metrics[labeledName] = promMetric.Gauge.GetValue()
+		}
 	}
 
 	b, err := json.Marshal(&stats)

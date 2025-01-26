@@ -48,6 +48,8 @@ func start(cmd *cobra.Command, args []string) {
 		s.RegisterShutdownHook(func(s *sev.Sev) {
 			taskRepo := &repository.Task{DB: s.DB()}
 			webhookRepo := &repository.Webhook{DB: s.DB()}
+			presetRepo := &repository.Preset{DB: s.DB()}
+			watchfolderRepo := &repository.Watchfolder{DB: s.DB()}
 			count, _ := taskRepo.Count()
 			countQueued, _ := taskRepo.CountByStatus(dto.QUEUED)
 			countRunning, _ := taskRepo.CountByStatus(dto.RUNNING)
@@ -55,6 +57,8 @@ func start(cmd *cobra.Command, args []string) {
 			countDoneFailed, _ := taskRepo.CountByStatus(dto.DONE_ERROR)
 			countDoneCanceled, _ := taskRepo.CountByStatus(dto.DONE_CANCELED)
 			countWebhooks, _ := webhookRepo.Count()
+			countPresets, _ := presetRepo.Count()
+			countWatchfolder, _ := watchfolderRepo.Count()
 			s.SendTelemtry(
 				"https://telemetry.ffmate.io",
 				map[string]interface{}{
@@ -65,6 +69,8 @@ func start(cmd *cobra.Command, args []string) {
 					"TasksDoneFailed":     countDoneFailed,
 					"TasksDoneCanceled":   countDoneCanceled,
 					"Webhooks":            countWebhooks,
+					"Presets":             countPresets,
+					"Watchfolder":         countWatchfolder,
 				},
 			)
 		})
