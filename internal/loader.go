@@ -38,6 +38,9 @@ func Init(s *sev.Sev, concurrentTasks uint, frontend embed.FS) {
 	for name, gauge := range metrics.Gauges() {
 		s.Metrics().RegisterGauge(name, gauge)
 	}
+	for name, gauge := range metrics.GaugesVec() {
+		s.Metrics().RegisterGaugeVec(name, gauge)
+	}
 
 	// setup middlewares
 	s.RegisterMiddleware("404", middleware.E404)

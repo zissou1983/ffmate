@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/welovemedia/ffmate/internal/database/model"
@@ -80,16 +81,8 @@ func (s *taskSvc) RestartTask(uuid string) (*model.Task, error) {
 	t.FinishedAt = 0
 	t.Error = ""
 	t.Status = dto.QUEUED
-	task, err := s.taskRepository.UpdateTask(t)
-	if err != nil {
-		return nil, err
-	}
-
-	s.sev.Metrics().Gauge("task.updated").Inc()
-	WebhookService().Fire(dto.TASK_UPDATED, task.ToDto())
-	WebsocketService().Broadcast(TASK_UPDATED, task.ToDto())
-
-	return task, err
+	s.sev.Metrics().Gauge("task.restarted").Inc()
+	return s.UpdateTask(t)
 }
 
 func (s *taskSvc) CancelTask(uuid string) (*model.Task, error) {
@@ -103,17 +96,10 @@ func (s *taskSvc) CancelTask(uuid string) (*model.Task, error) {
 	}
 
 	t.Progress = 100
+	t.FinishedAt = time.Now().UnixMilli()
 	t.Status = dto.DONE_CANCELED
-	task, err := s.taskRepository.UpdateTask(t)
-	if err != nil {
-		return nil, err
-	}
-
-	s.sev.Metrics().Gauge("task.updated").Inc()
-	WebhookService().Fire(dto.TASK_UPDATED, task.ToDto())
-	WebsocketService().Broadcast(TASK_UPDATED, task.ToDto())
-
-	return task, err
+	s.sev.Metrics().Gauge("task.canceled").Inc()
+	return s.UpdateTask(t)
 }
 
 func (s *taskSvc) NewTask(task *dto.NewTask, batch string, source string) (*model.Task, error) {

@@ -7,9 +7,11 @@ var namespace = "ffmate"
 var gauges = map[string]prometheus.Gauge{
 	"batch.created": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "batch_created", Help: "Number of created batches"}),
 
-	"task.created": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_created", Help: "Number of created tasks"}),
-	"task.deleted": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_deleted", Help: "Number of deleted tasks"}),
-	"task.updated": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_updated", Help: "Number of updated tasks"}),
+	"task.created":   prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_created", Help: "Number of created tasks"}),
+	"task.deleted":   prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_deleted", Help: "Number of deleted tasks"}),
+	"task.updated":   prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_updated", Help: "Number of updated tasks"}),
+	"task.canceled":  prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_canceled", Help: "Number of canceled tasks"}),
+	"task.restarted": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_restarted", Help: "Number of restarted tasks"}),
 
 	"preset.created": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "preset_created", Help: "Number of created presets"}),
 	"preset.deleted": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "preset_deleted", Help: "Number of deleted presets"}),
@@ -24,6 +26,17 @@ var gauges = map[string]prometheus.Gauge{
 	"watchfolder.deleted":  prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "watchfolder_deleted", Help: "Number of deleted watchfolders"}),
 }
 
+var gaugesVec = map[string]*prometheus.GaugeVec{
+	"rest.api": prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "rest_api",
+			Help:      "Number of requests against the RestAPI",
+		},
+		[]string{"method", "path"},
+	),
+}
+
 type MetricsImpl interface {
 	Gauges() []prometheus.Gauge
 }
@@ -34,4 +47,8 @@ type Metrics struct {
 
 func (m *Metrics) Gauges() map[string]prometheus.Gauge {
 	return gauges
+}
+
+func (m *Metrics) GaugesVec() map[string]*prometheus.GaugeVec {
+	return gaugesVec
 }

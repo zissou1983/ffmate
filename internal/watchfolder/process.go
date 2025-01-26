@@ -129,6 +129,7 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Contex
 			w.Sev.Logger().Errorf("error walking watchfolder directory (uuid: %s): %v", watchfolder.Uuid, err)
 		}
 
+		w.Sev.Metrics().Gauge("watchfolder.executed").Inc()
 		service.WatchfolderService().UpdateWatchfolder(watchfolder)
 		time.Sleep(time.Duration(watchfolder.Interval * int(time.Second)))
 	}
