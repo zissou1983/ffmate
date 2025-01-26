@@ -1,6 +1,8 @@
 package ffmpeg
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 	"github.com/welovemedia/ffmate/internal/database/model"
 )
@@ -20,4 +22,8 @@ type ExecutionRequest struct {
 	Command string
 
 	Logger *logrus.Logger
+
+	UpdateFunc func(progress float64)
+
+	Ctx context.Context
 }

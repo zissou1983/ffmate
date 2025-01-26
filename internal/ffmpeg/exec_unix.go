@@ -19,10 +19,10 @@ import (
 var debug = debugo.New("ffmpeg")
 
 // ExecuteFFmpeg runs the ffmpeg command, provides progress updates, and checks the result
-func Execute(request *ExecutionRequest, updateFunc func(progress float64)) error {
+func Execute(request *ExecutionRequest) error {
 	args := SplitCommand(request.Command)
 	args = append(args, "-progress", "pipe:2")
-	cmd := exec.Command(config.Config().FFMpeg, args...)
+	cmd := exec.CommandContext(request.Ctx, config.Config().FFMpeg, args...)
 
 	// Buffers for capturing full stderr
 	var stderrBuf bytes.Buffer
@@ -57,7 +57,7 @@ func Execute(request *ExecutionRequest, updateFunc func(progress float64)) error
 			if progress := parseFFmpegOutput(line, duration); progress != nil {
 				p := math.Round((progress.Time/duration*100)*100) / 100
 				debug.Debugf("progress: %f %+v (uuid: %s)", p, progress, request.Task.Uuid)
-				updateFunc(p)
+				request.UpdateFunc(p)
 			}
 		}
 		if err := scanner.Err(); err != nil {

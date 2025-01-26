@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,6 +28,8 @@ type Queue struct {
 var runningTasks = 0
 var debug = debugo.New("queue")
 
+var taskCtx = make(map[string]context.CancelCauseFunc)
+
 func (q *Queue) Init() {
 	go func() {
 		for {
@@ -37,7 +40,6 @@ func (q *Queue) Init() {
 				} else if task == nil {
 					debug.Debug("no queued tasks found")
 				} else {
-
 					go q.processTask(task)
 				}
 			} else {
@@ -49,6 +51,27 @@ func (q *Queue) Init() {
 }
 
 func (q *Queue) processTask(task *model.Task) {
+	processCtx, endProcess := context.WithCancel(context.Background())
+	defer endProcess()
+
+	ctx, cancelTask := context.WithCancelCause(context.Background())
+
+	canceledTask := false
+
+	go func() {
+		for {
+			select {
+			case <-service.TaskService().GetTaskUpdates():
+				canceledTask = true
+				cancelTask(errors.New("task canceled by user"))
+				return
+			case <-processCtx.Done():
+				return
+			default:
+			}
+		}
+	}()
+
 	runningTasks++
 	defer func() { runningTasks-- }()
 
@@ -69,15 +92,27 @@ func (q *Queue) processTask(task *model.Task) {
 	task.Command.Resolved = wildcards.Replace(task.Command.Raw, inFile, outFile, task.Source, true)
 	task.Status = dto.RUNNING
 	q.updateTask(task)
-	err = ffmpeg.Execute(&ffmpeg.ExecutionRequest{Task: task, Command: task.Command.Resolved, Logger: q.Sev.Logger()}, func(progress float64) {
-		task.Progress = progress
-		q.updateTask(task)
-	})
+	err = ffmpeg.Execute(
+		&ffmpeg.ExecutionRequest{
+			Task:    task,
+			Command: task.Command.Resolved,
+			Logger:  q.Sev.Logger(),
+			Ctx:     ctx,
+			UpdateFunc: func(progress float64) {
+				task.Progress = progress
+				q.updateTask(task)
+			},
+		},
+	)
 
 	// task is done (successful or not)
 	task.Progress = 100
 
 	if err != nil {
+		if canceledTask {
+			q.cancelTask(task, context.Cause(ctx))
+			return
+		}
 		q.failTask(task, err)
 		return
 	}
@@ -92,7 +127,6 @@ func (q *Queue) processTask(task *model.Task) {
 	task.Status = dto.DONE_SUCCESSFUL
 	q.updateTask(task)
 	q.Sev.Logger().Infof("task successful (uuid: %s)", task.Uuid)
-
 }
 
 func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProcessing, processorType string) error {
@@ -157,6 +191,15 @@ func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProce
 		q.Sev.Logger().Infof("finished %sProcessing (uuid: %s)", processorType, task.Uuid)
 	}
 	return nil
+}
+
+func (q *Queue) cancelTask(task *model.Task, err error) {
+	task.FinishedAt = time.Now().UnixMilli()
+	task.Progress = 100
+	task.Status = dto.DONE_CANCELED
+	task.Error = err.Error()
+	q.updateTask(task)
+	q.Sev.Logger().Warnf("task canceled (uuid: %s):\n%v", task.Uuid, err)
 }
 
 func (q *Queue) failTask(task *model.Task, err error) {

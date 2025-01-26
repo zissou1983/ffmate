@@ -17,6 +17,12 @@ type taskSvc struct {
 	taskRepository *repository.Task
 }
 
+var taskUpdates = make(chan *model.Task, 100)
+
+func (s *taskSvc) GetTaskUpdates() chan *model.Task {
+	return taskUpdates
+}
+
 func (s *taskSvc) ListTasks(page int, perPage int, status string) (*[]model.Task, int64, error) {
 	return s.taskRepository.List(page, perPage, status)
 }
@@ -91,8 +97,12 @@ func (s *taskSvc) CancelTask(uuid string) (*model.Task, error) {
 		return nil, err
 	}
 
-	if t.Status != dto.QUEUED {
-		return nil, errors.New("failed to cancel task, not in status 'queue'")
+	if t.Status != dto.QUEUED && t.Status != dto.RUNNING {
+		return nil, errors.New("failed to cancel task, task in unsupported state")
+	}
+
+	if t.Status == dto.RUNNING {
+		taskUpdates <- t
 	}
 
 	t.Progress = 100
