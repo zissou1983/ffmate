@@ -40,7 +40,9 @@ func (q *Queue) Init() {
 				} else if task == nil {
 					debug.Debug("no queued tasks found")
 				} else {
-					go q.processTask(task)
+					ctx, cancelTask := context.WithCancelCause(context.Background())
+					taskCtx[task.Uuid] = cancelTask
+					go q.processTask(task, ctx)
 				}
 			} else {
 				debug.Debugf("maximum concurrent tasks reached (tasks: %d/%d)", runningTasks, q.MaxConcurrentTasks)
@@ -48,32 +50,25 @@ func (q *Queue) Init() {
 			time.Sleep(1 * time.Second)
 		}
 	}()
-}
-
-func (q *Queue) processTask(task *model.Task) {
-	processCtx, endProcess := context.WithCancel(context.Background())
-	defer endProcess()
-
-	ctx, cancelTask := context.WithCancelCause(context.Background())
-
-	canceledTask := false
-
 	go func() {
 		for {
 			select {
-			case <-service.TaskService().GetTaskUpdates():
-				canceledTask = true
-				cancelTask(errors.New("task canceled by user"))
-				return
-			case <-processCtx.Done():
-				return
+			case t := <-service.TaskService().GetTaskUpdates():
+				if fn, ok := taskCtx[t.Uuid]; ok {
+					fn(errors.New("task canceled by user"))
+				} else {
+					q.Sev.Logger().Warnf("task not found to cancel (uuid: %s)", t.Uuid)
+				}
 			default:
 			}
 		}
 	}()
+}
 
+func (q *Queue) processTask(task *model.Task, ctx context.Context) {
 	runningTasks++
 	defer func() { runningTasks-- }()
+	defer delete(taskCtx, task.Uuid)
 
 	task.StartedAt = time.Now().UnixMilli()
 	q.Sev.Logger().Infof("processing task (uuid: %s)", task.Uuid)
@@ -109,7 +104,7 @@ func (q *Queue) processTask(task *model.Task) {
 	task.Progress = 100
 
 	if err != nil {
-		if canceledTask {
+		if context.Cause(ctx) != nil {
 			q.cancelTask(task, context.Cause(ctx))
 			return
 		}
@@ -199,7 +194,7 @@ func (q *Queue) cancelTask(task *model.Task, err error) {
 	task.Status = dto.DONE_CANCELED
 	task.Error = err.Error()
 	q.updateTask(task)
-	q.Sev.Logger().Warnf("task canceled (uuid: %s):\n%v", task.Uuid, err)
+	q.Sev.Logger().Warnf("task canceled (uuid: %s): %v", task.Uuid, err)
 }
 
 func (q *Queue) failTask(task *model.Task, err error) {
