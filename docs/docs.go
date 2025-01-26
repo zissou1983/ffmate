@@ -150,7 +150,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "the amount of results of a pagination request (min 1)",
+                        "description": "the amount of results of a pagination request (min 1; max: 100)",
                         "name": "perPage",
                         "in": "query"
                     }
@@ -354,6 +354,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/tasks/{uuid}/restart": {
+            "patch": {
+                "description": "Restart a task by its uuid",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Restart a task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the tasks uuid",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Task"
+                        }
+                    }
+                }
+            }
+        },
         "/version": {
             "get": {
                 "description": "Get ffmate version",
@@ -370,6 +399,118 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/dto.Version"
                         }
+                    }
+                }
+            }
+        },
+        "/watchfolder": {
+            "post": {
+                "description": "Add a new watchfolder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watchfolders"
+                ],
+                "summary": "Add a new watchfolder",
+                "parameters": [
+                    {
+                        "description": "new watchfolder",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewWatchfolder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Watchfolder"
+                        }
+                    }
+                }
+            }
+        },
+        "/watchfolder/{uuid}": {
+            "get": {
+                "description": "Get a single watchfolder by its uuid",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watchfolders"
+                ],
+                "summary": "Get single watchfolder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the watchfolders uuid",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Watchfolder"
+                        }
+                    }
+                }
+            }
+        },
+        "/watchfolders": {
+            "get": {
+                "description": "List all existing watchfolders",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watchfolders"
+                ],
+                "summary": "List all watchfolders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.Watchfolder"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/watchfolders/{uuid}": {
+            "delete": {
+                "description": "Delete a watchfolder by its uuid",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watchfolders"
+                ],
+                "summary": "Delete a watchfolder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "the watchfolders uuid",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     }
                 }
             }
@@ -480,6 +621,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "outputFile": {
+                    "type": "string"
+                },
                 "postProcessing": {
                     "$ref": "#/definitions/dto.NewPrePostProcessing"
                 },
@@ -517,6 +661,32 @@ const docTemplate = `{
                 },
                 "priority": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.NewWatchfolder": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "filter": {
+                    "$ref": "#/definitions/dto.WatchfolderFilter"
+                },
+                "growthChecks": {
+                    "type": "integer"
+                },
+                "interval": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "preset": {
+                    "type": "string"
                 }
             }
         },
@@ -564,6 +734,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "outputFile": {
                     "type": "string"
                 },
                 "postProcessing": {
@@ -633,6 +806,9 @@ const docTemplate = `{
                 "progress": {
                     "type": "number"
                 },
+                "source": {
+                    "type": "string"
+                },
                 "startedAt": {
                     "type": "integer"
                 },
@@ -673,6 +849,75 @@ const docTemplate = `{
             "properties": {
                 "version": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.Watchfolder": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "filter": {
+                    "$ref": "#/definitions/dto.WatchfolderFilter"
+                },
+                "growthChecks": {
+                    "type": "integer"
+                },
+                "interval": {
+                    "type": "integer"
+                },
+                "lastCheck": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "preset": {
+                    "type": "string"
+                },
+                "suspended": {
+                    "type": "boolean"
+                },
+                "updatedAt": {
+                    "type": "integer"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.WatchfolderFilter": {
+            "type": "object",
+            "properties": {
+                "extensions": {
+                    "$ref": "#/definitions/dto.WatchfolderFilterExtensions"
+                }
+            }
+        },
+        "dto.WatchfolderFilterExtensions": {
+            "type": "object",
+            "properties": {
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "include": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

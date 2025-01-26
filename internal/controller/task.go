@@ -26,6 +26,7 @@ func (c *TaskController) Setup(s *sev.Sev) {
 	s.Gin().GET(c.Prefix+c.getEndpoint()+"/batch/:uuid", interceptor.PageLimit, c.getTasks)
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deleteTask)
 	s.Gin().PATCH(c.Prefix+c.getEndpoint()+"/:uuid/cancel", c.cancelTask)
+	s.Gin().PATCH(c.Prefix+c.getEndpoint()+"/:uuid/restart", c.restartTask)
 }
 
 // @Summary List all tasks
@@ -135,7 +136,7 @@ func (c *TaskController) addTask(gin *gin.Context) {
 // @Router /tasks/{uuid} [get]
 func (c *TaskController) getTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")
-	task, err := service.TaskService().GetTaskById(uuid)
+	task, err := service.TaskService().GetTaskByUuid(uuid)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return
@@ -180,6 +181,24 @@ func (c *TaskController) getTasks(gin *gin.Context) {
 func (c *TaskController) cancelTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	task, err := service.TaskService().CancelTask(uuid)
+	if err != nil {
+		gin.JSON(400, exceptions.HttpBadRequest(err))
+		return
+	}
+
+	gin.JSON(200, task.ToDto())
+}
+
+// @Summary Restart a task
+// @Description Restart a task by its uuid
+// @Tags tasks
+// @Param uuid path string true "the tasks uuid"
+// @Produce json
+// @Success 200 {object} dto.Task
+// @Router /tasks/{uuid}/restart [patch]
+func (c *TaskController) restartTask(gin *gin.Context) {
+	uuid := gin.Param("uuid")
+	task, err := service.TaskService().RestartTask(uuid)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return

@@ -20,7 +20,7 @@ func (s *taskSvc) ListTasks(page int, perPage int, status string) (*[]model.Task
 	return s.taskRepository.List(page, perPage, status)
 }
 
-func (s *taskSvc) GetTaskById(uuid string) (*model.Task, error) {
+func (s *taskSvc) GetTaskByUuid(uuid string) (*model.Task, error) {
 	return s.taskRepository.First(uuid)
 }
 
@@ -65,14 +65,41 @@ func (s *taskSvc) DeleteTask(uuid string) error {
 	return nil
 }
 
+func (s *taskSvc) RestartTask(uuid string) (*model.Task, error) {
+	t, err := s.GetTaskByUuid(uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	if t.Status == dto.QUEUED {
+		return nil, errors.New("failed to restart task, task is already in status 'queue'")
+	}
+
+	t.Progress = 0
+	t.StartedAt = 0
+	t.FinishedAt = 0
+	t.Error = ""
+	t.Status = dto.QUEUED
+	task, err := s.taskRepository.UpdateTask(t)
+	if err != nil {
+		return nil, err
+	}
+
+	s.sev.Metrics().Gauge("task.updated").Inc()
+	WebhookService().Fire(dto.TASK_UPDATED, task.ToDto())
+	WebsocketService().Broadcast(TASK_UPDATED, task.ToDto())
+
+	return task, err
+}
+
 func (s *taskSvc) CancelTask(uuid string) (*model.Task, error) {
-	t, err := s.taskRepository.First(uuid)
+	t, err := s.GetTaskByUuid(uuid)
 	if err != nil {
 		return nil, err
 	}
 
 	if t.Status != dto.QUEUED {
-		return nil, errors.New("failed to cancel job, not in status 'queue'")
+		return nil, errors.New("failed to cancel task, not in status 'queue'")
 	}
 
 	t.Progress = 100
