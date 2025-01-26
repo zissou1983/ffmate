@@ -62,11 +62,11 @@ func (q *Queue) processTask(task *model.Task) {
 	}
 
 	// resolve wildcards
-	inFile := wildcards.Replace(task.InputFile.Raw, task.InputFile.Raw, task.OutputFile.Raw, false)
-	outFile := wildcards.Replace(task.OutputFile.Raw, task.InputFile.Raw, task.OutputFile.Raw, false)
+	inFile := wildcards.Replace(task.InputFile.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source, false)
+	outFile := wildcards.Replace(task.OutputFile.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source, false)
 	task.InputFile.Resolved = inFile
 	task.OutputFile.Resolved = outFile
-	task.Command.Resolved = wildcards.Replace(task.Command.Raw, inFile, outFile, true)
+	task.Command.Resolved = wildcards.Replace(task.Command.Raw, inFile, outFile, task.Source, true)
 	task.Status = dto.RUNNING
 	q.updateTask(task)
 	err = ffmpeg.Execute(&ffmpeg.ExecutionRequest{Task: task, Command: task.Command.Resolved, Logger: q.Sev.Logger()}, func(progress float64) {
@@ -111,9 +111,9 @@ func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProce
 				q.Sev.Logger().Errorf("failed to marshal task to write sidecar file: %v", err)
 			} else {
 				if processorType == "pre" {
-					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, false)
+					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source, false)
 				} else {
-					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, false)
+					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, task.Source, false)
 				}
 				q.updateTask(task)
 				err = os.WriteFile(processor.SidecarPath.Resolved, b, 0644)
@@ -128,9 +128,9 @@ func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProce
 
 		if processor.Error == "" && processor.ScriptPath != nil && processor.ScriptPath.Raw != "" {
 			if processorType == "pre" {
-				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, true)
+				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source, true)
 			} else {
-				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, true)
+				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, task.Source, true)
 			}
 			q.updateTask(task)
 			args := ffmpeg.SplitCommand(processor.ScriptPath.Resolved)

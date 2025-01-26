@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func Replace(input string, inputFile string, outputFile string, escapePaths bool) string {
+func Replace(input string, inputFile string, outputFile string, source string, escapePaths bool) string {
 	if escapePaths {
 		inputFile = strings.ReplaceAll(inputFile, " ", "\\ ")
 		outputFile = strings.ReplaceAll(outputFile, " ", "\\ ")
@@ -44,6 +44,8 @@ func Replace(input string, inputFile string, outputFile string, escapePaths bool
 
 	input = strings.ReplaceAll(input, "${OS_NAME}", runtime.GOOS)
 	input = strings.ReplaceAll(input, "${OS_ARCH}", runtime.GOARCH)
+
+	input = strings.ReplaceAll(input, "${SOURCE}", source)
 
 	input = strings.ReplaceAll(input, "${UUID}", uuid.NewString())
 
