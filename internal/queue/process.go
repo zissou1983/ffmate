@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/mattn/go-shellwords"
 	"github.com/welovemedia/ffmate/internal/database/model"
 	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
@@ -162,19 +163,24 @@ func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProce
 				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, task.Source, true)
 			}
 			q.updateTask(task)
-			args := ffmpeg.SplitCommand(processor.ScriptPath.Resolved)
-			cmd := exec.Command(args[0], args[1:]...)
-			debug.Debugf("triggered %sProcessing script (uuid: %s)", processorType, task.Uuid)
-
-			if err := cmd.Start(); err != nil {
+			args, err := shellwords.NewParser().Parse(processor.ScriptPath.Resolved)
+			if err != nil {
 				processor.Error = err.Error()
-				q.Sev.Logger().Errorf("failed to start %sProcessing script (uuid: %s): %v", processorType, task.Uuid, err)
+				q.Sev.Logger().Errorf("failed to parse %sProcessing script (uuid: %s): %v", processorType, task.Uuid, err)
 			} else {
-				if err := cmd.Wait(); err != nil {
-					processor.Error = err.Error()
-					q.Sev.Logger().Errorf("failed %sProcessing script (uuid: %s): %v", processorType, task.Uuid, err)
-				}
+				cmd := exec.Command(args[0], args[1:]...)
+				debug.Debugf("triggered %sProcessing script (uuid: %s)", processorType, task.Uuid)
 
+				if err := cmd.Start(); err != nil {
+					processor.Error = err.Error()
+					q.Sev.Logger().Errorf("failed to start %sProcessing script (uuid: %s): %v", processorType, task.Uuid, err)
+				} else {
+					if err := cmd.Wait(); err != nil {
+						processor.Error = err.Error()
+						q.Sev.Logger().Errorf("failed %sProcessing script (uuid: %s): %v", processorType, task.Uuid, err)
+					}
+
+				}
 			}
 		}
 
