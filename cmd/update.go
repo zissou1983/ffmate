@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/sanbornm/go-selfupdate/selfupdate"
 	"github.com/spf13/cobra"
@@ -30,6 +31,38 @@ func init() {
 	rootCmd.AddCommand(updateCmd)
 }
 
+func update(cmd *cobra.Command, args []string) {
+	res, err := checkForUpdate(false)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else {
+		fmt.Println(res)
+		os.Exit(0)
+	}
+}
+
+func checkForUpdate(force bool) (string, error) {
+	res, found, err := updateAvailable()
+	if err != nil {
+		return "", fmt.Errorf("failed to contact update server: %+v", err)
+	}
+
+	if !found {
+		return fmt.Sprintf("no newer version found"), nil
+	}
+
+	if !dry || force {
+		err = updater.Update()
+		if err != nil {
+			return "", fmt.Errorf("failed to update to version:  %+v\n", err)
+		} else {
+			return fmt.Sprintf("updated to version: %s\n", res), nil
+		}
+	}
+	return "no updates found", nil
+}
+
 func updateAvailable() (string, bool, error) {
 	res, err := updater.UpdateAvailable()
 	if err != nil {
@@ -40,27 +73,4 @@ func updateAvailable() (string, bool, error) {
 	}
 
 	return res, true, nil
-}
-
-func update(cmd *cobra.Command, args []string) {
-	res, found, err := updateAvailable()
-	if err != nil {
-		fmt.Printf("failed to contact update server: %+v", err)
-		return
-	}
-
-	if !found {
-		fmt.Print("no newer version found\n")
-		return
-	}
-
-	fmt.Printf("newer version found: %s\n", res)
-	if !dry {
-		err = updater.Update()
-		if err != nil {
-			fmt.Printf("failed to update to version:  %+v\n", err)
-		} else {
-			fmt.Printf("updated to version: %s\n", res)
-		}
-	}
 }
