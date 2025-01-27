@@ -58,7 +58,7 @@ func Execute(request *ExecutionRequest) error {
 				duration = parseDuration(durationStr)
 			}
 			if progress := parseFFmpegOutput(line, duration); progress != nil {
-				p := math.Round((progress.Time/duration*100)*100) / 100
+				p := math.Min(100, math.Round((progress.Time/duration*100)*100)/100) // cap at 100
 				debug.Debugf("progress: %f %+v (uuid: %s)", p, progress, request.Task.Uuid)
 				request.UpdateFunc(p)
 			}
