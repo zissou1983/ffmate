@@ -97,6 +97,8 @@ func (q *Queue) processTask(task *model.Task, ctx context.Context, doneFunc func
 	task.Command.Resolved = wildcards.Replace(task.Command.Raw, inFile, outFile, task.Source, true)
 	task.Status = dto.RUNNING
 	q.updateTask(task)
+
+	q.Sev.Logger().Infof("starting processing (uuid: %s)", task.Uuid)
 	err = ffmpeg.Execute(
 		&ffmpeg.ExecutionRequest{
 			Task:    task,
@@ -116,6 +118,7 @@ func (q *Queue) processTask(task *model.Task, ctx context.Context, doneFunc func
 	task.Remaining = -1
 
 	if err != nil {
+		q.Sev.Logger().Errorf("finished processing with error (uuid: %s): %v", task.Uuid, err)
 		if context.Cause(ctx) != nil {
 			q.cancelTask(task, context.Cause(ctx))
 			return
@@ -123,6 +126,8 @@ func (q *Queue) processTask(task *model.Task, ctx context.Context, doneFunc func
 		q.failTask(task, err)
 		return
 	}
+
+	q.Sev.Logger().Infof("finished processing (uuid: %s)", task.Uuid)
 
 	err = q.prePostProcessTask(task, task.PostProcessing, "post")
 	if err != nil {

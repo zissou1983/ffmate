@@ -16,7 +16,7 @@ build+frontend:
 	cd ui && pnpm i && pnpm run generate
 
 build: build+frontend mkdir+bin 
-	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -o _bin/darwin-arm64 main.go
+	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags "-s -w" -o _bin/darwin-arm64 main.go
 
 changelog:
 	auto-changelog --output CHANGELOG.md
