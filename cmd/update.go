@@ -21,8 +21,8 @@ func init() {
 
 	updater = &selfupdate.Updater{
 		CurrentVersion: config.Config().AppVersion,
-		ApiURL:         "https://ffmate.sev.wtf/_update/",
-		BinURL:         "https://ffmate.sev.wtf/_update/",
+		ApiURL:         "https://earth.ffmate.io/_update/",
+		BinURL:         "https://earth.ffmate.io/_update/",
 		ForceCheck:     true,
 		CmdName:        "ffmate",
 	}
