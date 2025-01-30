@@ -32,10 +32,10 @@ func init() {
 	rootCmd.AddCommand(serverCmd)
 
 	serverCmd.PersistentFlags().StringP("ffmpeg", "f", "ffmpeg", "path to ffmpeg binary")
-	serverCmd.PersistentFlags().StringP("port", "p", "3000", "the port to listen ob")
+	serverCmd.PersistentFlags().StringP("port", "p", "3000", "the port to listen to")
 	serverCmd.PersistentFlags().BoolP("headless", "", false, "start without ui")
 	serverCmd.PersistentFlags().BoolP("tray", "", false, "start with tray menu (experimental)")
-	serverCmd.PersistentFlags().StringP("database", "", "db.sqlite", "the path do the database")
+	serverCmd.PersistentFlags().StringP("database", "", "~/.ffmate/db.sqlite", "the path do the database")
 	serverCmd.PersistentFlags().UintP("max-concurrent-tasks", "m", 3, "define maximum concurrent running tasks")
 	serverCmd.PersistentFlags().BoolP("send-telemetry", "", true, "enable sending anonymous telemetry data")
 

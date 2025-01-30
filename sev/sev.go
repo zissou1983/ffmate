@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -61,6 +63,13 @@ func New(name string, version string, dbPath string, port uint) *Sev {
 	ginInstance.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// seutp db
+	if strings.HasPrefix(dbPath, "~") {
+		dbPath = filepath.Join(os.Getenv("HOME"), dbPath[1:])
+	}
+	if err := os.MkdirAll(filepath.Dir(dbPath), os.ModePerm); err != nil {
+		logger.Errorf("failed to create database folder (path: %s): %v", filepath.Dir(dbPath), err)
+		os.Exit(1)
+	}
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
 		Logger: gormLogger.Default.LogMode(gormLogger.Silent),
 	})
