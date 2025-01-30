@@ -18,7 +18,7 @@ type Stats struct {
 	AppName    string `json:"appName"`
 	AppVersion string `json:"appVersion"`
 
-	RuntimeDuration time.Duration `json:"runtimeDuration"`
+	RuntimeDuration int64 `json:"runtimeDuration"`
 
 	Os   string `json:"os"`
 	Arch string `json:"arch"`
@@ -35,7 +35,7 @@ func (s *Sev) SendTelemtry(targetUrl string, custom map[string]interface{}) {
 		AppName:    config.Config().AppName,
 		AppVersion: config.Config().AppVersion,
 
-		RuntimeDuration: time.Since(s.AppStartTime()),
+		RuntimeDuration: time.Since(s.AppStartTime()).Milliseconds(),
 
 		Os:   runtime.GOOS,
 		Arch: runtime.GOARCH,
