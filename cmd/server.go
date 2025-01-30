@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"fyne.io/systray"
 	"github.com/spf13/cobra"
@@ -162,6 +163,8 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 						s.Logger().Error(err)
 					} else {
 						s.Logger().Info(res)
+						s.Logger().Info("please restart ffmate to apply the update")
+						os.Exit(0)
 					}
 				case <-mQuit.ClickedCh:
 					s.Shutdown()
