@@ -46,9 +46,11 @@ type Task struct {
 	InputFile  *RawResolved `json:"inputFile"`
 	OutputFile *RawResolved `json:"outputFile"`
 
-	Status   TaskStatus `json:"status"`
-	Progress float64    `json:"progress"`
-	Error    string     `json:"error,omitempty"`
+	Status    TaskStatus `json:"status"`
+	Progress  float64    `json:"progress"`
+	Remaining float64    `json:"remaining"`
+
+	Error string `json:"error,omitempty"`
 
 	Priority uint `json:"priority"`
 

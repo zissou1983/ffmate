@@ -32,12 +32,12 @@ type message struct {
 	Payload any    `json:"payload"`
 }
 
+var debug = debugo.New("websocket:service")
+
 var (
-	debug = debugo.New("websocket:service")
+	conns = make(map[string]*websocket.Conn)
 	mutex = sync.RWMutex{}
 )
-
-var conns = make(map[string]*websocket.Conn)
 
 func (s *websocketSvc) AddConnection(uuid string, conn *websocket.Conn) {
 	mutex.Lock()
@@ -52,8 +52,8 @@ func (s *websocketSvc) RemoveConnection(uuid string, conn *websocket.Conn) {
 }
 
 func (s *websocketSvc) Broadcast(subject Subject, msg any) error {
-	mutex.RLock()
-	defer mutex.RUnlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 	for uuid, conn := range conns {
 		err := conn.WriteJSON(&message{Subject: subject, Payload: msg})
 		if err != nil {

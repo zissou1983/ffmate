@@ -29,25 +29,32 @@ type fileState struct {
 	Attempts int
 }
 
-var watchfolderCtx = make(map[string]context.CancelCauseFunc)
+var (
+	watchfolderCtx = make(map[string]context.CancelCauseFunc)
+	watchfolderMu  = sync.Mutex{}
+)
 
 func (w *Watchfolder) Init() {
 	watchfolders, total, _ := w.WatchfolderRepository.List(-1, -1)
 	debug.Debugf("initializing %d watchfolders", total)
 
 	go w.monitorWatchfolderUpdates()
+	defer watchfolderMu.Unlock()
 
+	watchfolderMu.Lock()
 	for _, watchfolder := range *watchfolders {
 		ctx, cancel := context.WithCancelCause(context.Background())
 		watchfolderCtx[watchfolder.Uuid] = cancel
 		go w.process(&watchfolder, ctx)
 	}
+
 }
 
 func (w *Watchfolder) monitorWatchfolderUpdates() {
 	for {
 		select {
 		case watchfolder := <-service.WatchfolderService().GetWatchfolderUpdates():
+			watchfolderMu.Lock()
 			if cancel, ok := watchfolderCtx[watchfolder.Uuid]; ok {
 				// cancel running watchfolder if found and remove context
 				if !watchfolder.Suspended && !watchfolder.DeletedAt.Valid {
@@ -64,6 +71,7 @@ func (w *Watchfolder) monitorWatchfolderUpdates() {
 				watchfolderCtx[watchfolder.Uuid] = cancel
 				go w.process(watchfolder, ctx)
 			}
+			watchfolderMu.Unlock()
 		}
 	}
 }

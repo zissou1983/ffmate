@@ -106,6 +106,7 @@ func (s *taskSvc) CancelTask(uuid string) (*model.Task, error) {
 	}
 
 	t.Progress = 100
+	t.Remaining = -1
 	t.FinishedAt = time.Now().UnixMilli()
 	t.Status = dto.DONE_CANCELED
 	s.sev.Metrics().Gauge("task.canceled").Inc()

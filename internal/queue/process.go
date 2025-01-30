@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 
 	"github.com/mattn/go-shellwords"
@@ -26,15 +27,18 @@ type Queue struct {
 	MaxConcurrentTasks uint
 }
 
-var runningTasks = 0
 var debug = debugo.New("queue")
 
-var taskCtx = make(map[string]context.CancelCauseFunc)
+var (
+	taskCtx = make(map[string]context.CancelCauseFunc)
+	taskMu  = &sync.Mutex{}
+)
 
 func (q *Queue) Init() {
 	go func() {
 		for {
-			if runningTasks < int(q.MaxConcurrentTasks) {
+			taskMu.Lock()
+			if len(taskCtx) < int(q.MaxConcurrentTasks) {
 				task, err := q.TaskRepository.NextQueued()
 				if err != nil {
 					q.Sev.Logger().Errorf("failed to receive queued task from db: %v", err)
@@ -43,11 +47,16 @@ func (q *Queue) Init() {
 				} else {
 					ctx, cancelTask := context.WithCancelCause(context.Background())
 					taskCtx[task.Uuid] = cancelTask
-					go q.processTask(task, ctx)
+					go q.processTask(task, ctx, func() {
+						taskMu.Lock()
+						defer taskMu.Unlock()
+						delete(taskCtx, task.Uuid)
+					})
 				}
 			} else {
-				debug.Debugf("maximum concurrent tasks reached (tasks: %d/%d)", runningTasks, q.MaxConcurrentTasks)
+				debug.Debugf("maximum concurrent tasks reached (tasks: %d/%d)", len(taskCtx), q.MaxConcurrentTasks)
 			}
+			taskMu.Unlock()
 			time.Sleep(1 * time.Second)
 		}
 	}()
@@ -55,21 +64,21 @@ func (q *Queue) Init() {
 		for {
 			select {
 			case t := <-service.TaskService().GetTaskUpdates():
+				taskMu.Lock()
 				if fn, ok := taskCtx[t.Uuid]; ok {
 					fn(errors.New("task canceled by user"))
 				} else {
 					q.Sev.Logger().Warnf("task not found to cancel (uuid: %s)", t.Uuid)
 				}
+				taskMu.Unlock()
 			default:
 			}
 		}
 	}()
 }
 
-func (q *Queue) processTask(task *model.Task, ctx context.Context) {
-	runningTasks++
-	defer func() { runningTasks-- }()
-	defer delete(taskCtx, task.Uuid)
+func (q *Queue) processTask(task *model.Task, ctx context.Context, doneFunc func()) {
+	defer doneFunc()
 
 	task.StartedAt = time.Now().UnixMilli()
 	q.Sev.Logger().Infof("processing task (uuid: %s)", task.Uuid)
@@ -94,8 +103,9 @@ func (q *Queue) processTask(task *model.Task, ctx context.Context) {
 			Command: task.Command.Resolved,
 			Logger:  q.Sev.Logger(),
 			Ctx:     ctx,
-			UpdateFunc: func(progress float64) {
+			UpdateFunc: func(progress float64, remaining float64) {
 				task.Progress = progress
+				task.Remaining = remaining
 				q.updateTask(task)
 			},
 		},
@@ -103,6 +113,7 @@ func (q *Queue) processTask(task *model.Task, ctx context.Context) {
 
 	// task is done (successful or not)
 	task.Progress = 100
+	task.Remaining = -1
 
 	if err != nil {
 		if context.Cause(ctx) != nil {

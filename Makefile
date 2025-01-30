@@ -7,7 +7,7 @@ test:
 	go test ./...
 
 dev: 
-	go run -race main.go
+	go run -race main.go server -d "*" --send-telemetry=false
 
 mkdir+bin:
 	mkdir -p _bin

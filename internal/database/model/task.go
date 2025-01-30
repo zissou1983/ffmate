@@ -21,9 +21,10 @@ type Task struct {
 	InputFile  *dto.RawResolved `gorm:"type:json"`
 	OutputFile *dto.RawResolved `gorm:"type:json"`
 
-	Status   dto.TaskStatus `gorm:"index"`
-	Error    string
-	Progress float64
+	Status    dto.TaskStatus `gorm:"index"`
+	Error     string
+	Progress  float64
+	Remaining float64
 
 	Priority uint
 
@@ -47,9 +48,11 @@ func (m *Task) ToDto() *dto.Task {
 		InputFile:  m.InputFile,
 		OutputFile: m.OutputFile,
 
-		Status:   m.Status,
-		Progress: m.Progress,
-		Error:    m.Error,
+		Status:    m.Status,
+		Progress:  m.Progress,
+		Remaining: m.Remaining,
+
+		Error: m.Error,
 
 		Source: m.Source,
 

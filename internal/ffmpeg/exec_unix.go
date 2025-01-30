@@ -60,7 +60,15 @@ func Execute(request *ExecutionRequest) error {
 			if progress := parseFFmpegOutput(line, duration); progress != nil {
 				p := math.Min(100, math.Round((progress.Time/duration*100)*100)/100) // cap at 100
 				debug.Debugf("progress: %f %+v (uuid: %s)", p, progress, request.Task.Uuid)
-				request.UpdateFunc(p)
+
+				// Calculate and log the estimated remaining time
+				remainingTime, err := progress.EstimateRemainingTime(duration)
+				if err != nil {
+					debug.Debugf("failed to estimate remaining time: %v", err)
+					remainingTime = -1
+				}
+
+				request.UpdateFunc(p, remainingTime)
 			}
 		}
 		if err := scanner.Err(); err != nil {
