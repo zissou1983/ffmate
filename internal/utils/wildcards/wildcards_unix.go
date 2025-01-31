@@ -20,10 +20,14 @@ func Replace(input string, inputFile string, outputFile string, source string, e
 
 	input = strings.ReplaceAll(input, "${INPUT_FILE}", inputFile)
 	input = strings.ReplaceAll(input, "${OUTPUT_FILE}", outputFile)
-	input = strings.ReplaceAll(input, "${INPUT_FILE_BASENAME}", filepath.Base(inputFile))
-	input = strings.ReplaceAll(input, "${OUTPUT_FILE_BASENAME}", filepath.Base(inputFile))
-	input = strings.ReplaceAll(input, "${INPUT_FILE_DIRNAME}", filepath.Dir(inputFile))
-	input = strings.ReplaceAll(input, "${OUTPUT_FILE_DIRNAME}", filepath.Dir(inputFile))
+	input = strings.ReplaceAll(input, "${INPUT_FILE_BASE}", filepath.Base(inputFile))
+	input = strings.ReplaceAll(input, "${OUTPUT_FILE_BASE}", filepath.Base(inputFile))
+	input = strings.ReplaceAll(input, "${INPUT_FILE_EXTENSION}", filepath.Ext(filepath.Base(inputFile)))
+	input = strings.ReplaceAll(input, "${OUTPUT_FILE_EXTENSION", filepath.Ext(filepath.Base(outputFile)))
+	input = strings.ReplaceAll(input, "${INPUT_FILE_BASENAME}", strings.TrimSuffix(filepath.Base(inputFile), filepath.Ext(filepath.Base(inputFile))))
+	input = strings.ReplaceAll(input, "${OUTPUT_FILE_BASENAME}", strings.TrimSuffix(filepath.Base(outputFile), filepath.Ext(filepath.Base(outputFile))))
+	input = strings.ReplaceAll(input, "${INPUT_FILE_DIR}", filepath.Dir(inputFile))
+	input = strings.ReplaceAll(input, "${OUTPUT_FILE_DIR}", filepath.Dir(inputFile))
 
 	input = strings.ReplaceAll(input, "${DATE_YEAR}", time.Now().Format("2006"))
 	input = strings.ReplaceAll(input, "${DATE_SHORTYEAR}", time.Now().Format("06"))

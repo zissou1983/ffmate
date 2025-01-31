@@ -134,7 +134,7 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Contex
 
 		if err != nil {
 			watchfolder.Error = err.Error()
-			w.Sev.Logger().Errorf("error walking watchfolder directory (uuid: %s): %v", watchfolder.Uuid, err)
+			w.Sev.Logger().Errorf("walking watchfolder directory failed (uuid: %s): %v", watchfolder.Uuid, err)
 		}
 
 		w.Sev.Metrics().Gauge("watchfolder.executed").Inc()
