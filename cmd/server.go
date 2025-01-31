@@ -34,11 +34,11 @@ func init() {
 
 	serverCmd.PersistentFlags().StringP("ffmpeg", "f", "ffmpeg", "path to ffmpeg binary")
 	serverCmd.PersistentFlags().StringP("port", "p", "3000", "the port to listen to")
-	serverCmd.PersistentFlags().BoolP("headless", "", false, "start without ui")
-	serverCmd.PersistentFlags().BoolP("tray", "", false, "start with tray menu (experimental)")
-	serverCmd.PersistentFlags().StringP("database", "", "~/.ffmate/db.sqlite", "the path do the database")
+	serverCmd.PersistentFlags().BoolP("headless", "u", false, "start without ui")
+	serverCmd.PersistentFlags().BoolP("tray", "t", false, "start with tray menu (experimental)")
+	serverCmd.PersistentFlags().StringP("database", "b", "~/.ffmate/db.sqlite", "the path do the database")
 	serverCmd.PersistentFlags().UintP("max-concurrent-tasks", "m", 3, "define maximum concurrent running tasks")
-	serverCmd.PersistentFlags().BoolP("send-telemetry", "", true, "enable sending anonymous telemetry data")
+	serverCmd.PersistentFlags().BoolP("send-telemetry", "s", true, "enable sending anonymous telemetry data")
 
 	viper.BindPFlag("ffmpeg", serverCmd.PersistentFlags().Lookup("ffmpeg"))
 	viper.BindPFlag("port", serverCmd.PersistentFlags().Lookup("port"))
