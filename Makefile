@@ -17,6 +17,7 @@ build+frontend:
 
 build: build+frontend mkdir+bin 
 	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags "-s -w" -o _bin/darwin-arm64 main.go
+	CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w" -o _bin/darwin-amd64 main.go
 
 changelog:
 	auto-changelog --output CHANGELOG.md
