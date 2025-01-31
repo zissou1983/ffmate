@@ -25,6 +25,8 @@ const (
 	WATCHFOLDER_CREATED Subject = "watchfolder:created"
 	WATCHFOLDER_UPDATED Subject = "watchfolder:updated"
 	WATCHFOLDER_DELETED Subject = "watchfolder:deleted"
+
+	LOG Subject = "log"
 )
 
 type message struct {
@@ -54,11 +56,8 @@ func (s *websocketSvc) RemoveConnection(uuid string, conn *websocket.Conn) {
 func (s *websocketSvc) Broadcast(subject Subject, msg any) error {
 	mutex.Lock()
 	defer mutex.Unlock()
-	for uuid, conn := range conns {
-		err := conn.WriteJSON(&message{Subject: subject, Payload: msg})
-		if err != nil {
-			debug.Debugf("failed to broadcast message to client (uuid: %s): %v", uuid, err)
-		}
+	for _, conn := range conns {
+		conn.WriteJSON(&message{Subject: subject, Payload: msg})
 	}
 	return nil
 }

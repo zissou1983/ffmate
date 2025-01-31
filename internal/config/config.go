@@ -14,7 +14,6 @@ type ConfigDefinition struct {
 	FFMpeg string `mapstructure:"ffmpeg"`
 
 	Port               uint   `mapstructure:"port"`
-	Headless           bool   `mapstructure:"headless"`
 	Tray               bool   `mapstructure:"tray"`
 	Database           string `mapstructure:"database"`
 	Debug              string `mapstructure:"debug"`

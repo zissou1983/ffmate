@@ -2,7 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
+	"regexp"
+	"runtime"
 
 	"fyne.io/systray"
 	"github.com/spf13/cobra"
@@ -11,6 +15,8 @@ import (
 	"github.com/welovemedia/ffmate/internal/config"
 	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/internal/dto"
+	"github.com/welovemedia/ffmate/internal/service"
+	"github.com/welovemedia/ffmate/internal/utils"
 	"github.com/welovemedia/ffmate/sev"
 	"github.com/yosev/debugo"
 
@@ -34,7 +40,6 @@ func init() {
 
 	serverCmd.PersistentFlags().StringP("ffmpeg", "f", "ffmpeg", "path to ffmpeg binary")
 	serverCmd.PersistentFlags().StringP("port", "p", "3000", "the port to listen to")
-	serverCmd.PersistentFlags().BoolP("headless", "u", false, "start without ui")
 	serverCmd.PersistentFlags().BoolP("tray", "t", false, "start with tray menu (experimental)")
 	serverCmd.PersistentFlags().StringP("database", "b", "~/.ffmate/db.sqlite", "the path do the database")
 	serverCmd.PersistentFlags().UintP("max-concurrent-tasks", "m", 3, "define maximum concurrent running tasks")
@@ -42,7 +47,6 @@ func init() {
 
 	viper.BindPFlag("ffmpeg", serverCmd.PersistentFlags().Lookup("ffmpeg"))
 	viper.BindPFlag("port", serverCmd.PersistentFlags().Lookup("port"))
-	viper.BindPFlag("headless", serverCmd.PersistentFlags().Lookup("headless"))
 	viper.BindPFlag("tray", serverCmd.PersistentFlags().Lookup("tray"))
 	viper.BindPFlag("database", serverCmd.PersistentFlags().Lookup("database"))
 	viper.BindPFlag("maxConcurrentTasks", serverCmd.PersistentFlags().Lookup("max-concurrent-tasks"))
@@ -55,6 +59,21 @@ func start(cmd *cobra.Command, args []string) {
 	s := sev.New("ffmate", config.Config().AppVersion, config.Config().Database, config.Config().Port)
 
 	s.RegisterSignalHook()
+
+	s.RegisterStartupHook(func(s *sev.Sev) {
+		// broadcast all logs via websocket
+		lb := &utils.LogBroadcaster{
+			Callback: func(p []byte) {
+				if service.WebsocketService() != nil {
+					re := regexp.MustCompile(`\x1b\[[0-9;]*m`)
+					service.WebsocketService().Broadcast("log:created", re.ReplaceAllString(string(p), ""))
+				}
+			},
+		}
+		mw := io.MultiWriter(os.Stderr, lb)
+		s.Logger().SetOutput(mw)
+		debugo.SetOutput(mw)
+	})
 
 	s.RegisterStartupHook(func(s *sev.Sev) {
 		s.Logger().Infof("server is listening on 0.0.0.0:%d", config.Config().Port)
@@ -74,7 +93,7 @@ func start(cmd *cobra.Command, args []string) {
 			countWebhooks, _ := webhookRepo.Count()
 			countPresets, _ := presetRepo.Count()
 			countWatchfolder, _ := watchfolderRepo.Count()
-			s.SendTelemtry(
+			s.SendTelemetry(
 				"https://telemetry.ffmate.io",
 				map[string]interface{}{
 					"Tasks":               count,
@@ -91,7 +110,6 @@ func start(cmd *cobra.Command, args []string) {
 					"Tray":               config.Config().Tray,
 					"Port":               config.Config().Port,
 					"MaxConcurrentTasks": config.Config().MaxConcurrentTasks,
-					"Headless":           config.Config().Headless,
 					"Debug":              config.Config().Debug,
 				},
 			)
@@ -120,18 +138,22 @@ func start(cmd *cobra.Command, args []string) {
 }
 
 func useSystray(s *sev.Sev, readyFunc func()) {
+
 	s.RegisterShutdownHook(func(s *sev.Sev) {
 		systray.Quit()
 	})
 
 	systray.Run(func() {
-
 		systray.SetIcon(iconDataW)
 		systray.SetTooltip(fmt.Sprintf("ffmate %s", config.Config().AppVersion))
 
 		mFFmate := systray.AddMenuItem(fmt.Sprintf("ffmate %s", config.Config().AppVersion), "")
 		mFFmate.SetIcon(iconDataC)
 		mFFmate.Disable()
+
+		systray.AddSeparator()
+
+		mUi := systray.AddMenuItem("Open UI", "Open the ffmate ui")
 
 		systray.AddSeparator()
 
@@ -149,6 +171,16 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 		go func() {
 			for {
 				select {
+				case <-mUi.ClickedCh:
+					url := fmt.Sprintf("http://localhost:%d", config.Config().Port)
+					switch runtime.GOOS {
+					case "linux":
+						exec.Command("xdg-open", url).Start()
+					case "darwin":
+						exec.Command("open", url).Start()
+					case "windows":
+						exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+					}
 				case <-mDebug.ClickedCh:
 					if mDebug.Checked() {
 						debugo.SetDebug("")

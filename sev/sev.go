@@ -47,11 +47,14 @@ var debug = debugo.New("sev")
 func New(name string, version string, dbPath string, port uint) *Sev {
 	// setup logger
 	logger := logrus.New()
-	logger.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp:   true,
-		TimestampFormat: "15:04:05.000",
-	})
 	logger.SetLevel(logrus.InfoLevel)
+	logger.SetFormatter(&CustomFormatter{})
+	logger.SetOutput(os.Stderr)
+
+	// setup debugger
+	debugo.SetTimestamp(&debugo.Timestamp{
+		Format: "15:04:05.000",
+	})
 
 	// setup gin
 	gin.SetMode(gin.ReleaseMode)
