@@ -190,13 +190,15 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 						mDebug.Check()
 					}
 				case <-mUpdate.ClickedCh:
-					res, err := checkForUpdate(true)
+					res, found, err := checkForUpdate(true)
 					if err != nil {
 						s.Logger().Error(err)
 					} else {
 						s.Logger().Info(res)
-						s.Logger().Info("please restart ffmate to apply the update")
-						os.Exit(0)
+						if found {
+							s.Logger().Info("please restart ffmate to apply the update")
+							os.Exit(0)
+						}
 					}
 				case <-mQuit.ClickedCh:
 					s.Shutdown()

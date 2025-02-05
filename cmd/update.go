@@ -32,7 +32,7 @@ func init() {
 }
 
 func update(cmd *cobra.Command, args []string) {
-	res, err := checkForUpdate(false)
+	res, _, err := checkForUpdate(false)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -42,25 +42,25 @@ func update(cmd *cobra.Command, args []string) {
 	}
 }
 
-func checkForUpdate(force bool) (string, error) {
+func checkForUpdate(force bool) (string, bool, error) {
 	res, found, err := updateAvailable()
 	if err != nil {
-		return "", fmt.Errorf("failed to contact update server: %+v", err)
+		return "", false, fmt.Errorf("failed to contact update server: %+v", err)
 	}
 
 	if !found {
-		return fmt.Sprintf("no newer version found"), nil
+		return fmt.Sprintf("no newer version found"), false, nil
 	}
 
 	if !dry || force {
 		err = updater.Update()
 		if err != nil {
-			return "", fmt.Errorf("failed to update to version:  %+v\n", err)
+			return "", true, fmt.Errorf("failed to update to version:  %+v\n", err)
 		} else {
-			return fmt.Sprintf("updated to version: %s\n", res), nil
+			return fmt.Sprintf("updated to version: %s\n", res), true, nil
 		}
 	}
-	return "no updates found", nil
+	return "no updates found", false, nil
 }
 
 func updateAvailable() (string, bool, error) {
