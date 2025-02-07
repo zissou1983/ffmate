@@ -33,6 +33,8 @@ type Task struct {
 
 	Source string
 
+	Session string
+
 	StartedAt  int64
 	FinishedAt int64
 }

@@ -19,6 +19,13 @@ type taskSvc struct {
 
 var taskUpdates = make(chan *model.Task, 100)
 
+func (s *taskSvc) CountAllStatus(session bool) (queued, running, doneSuccessful, doneError, doneCanceled int, err error) {
+	if session {
+		return s.taskRepository.CountAllStatus(s.sev.Session())
+	}
+	return s.taskRepository.CountAllStatus("")
+}
+
 func (s *taskSvc) GetTaskUpdates() chan *model.Task {
 	return taskUpdates
 }
@@ -133,7 +140,7 @@ func (s *taskSvc) NewTask(task *dto.NewTask, batch string, source string) (*mode
 			task.PostProcessing = &dto.NewPrePostProcessing{ScriptPath: preset.PostProcessing.ScriptPath, SidecarPath: preset.PostProcessing.SidecarPath}
 		}
 	}
-	t, err := s.taskRepository.Create(task, batch, source)
+	t, err := s.taskRepository.Create(task, batch, source, s.sev.Session())
 	if err != nil {
 		return nil, err
 	}

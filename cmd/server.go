@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"runtime"
+	"time"
 
 	"fyne.io/systray"
 	"github.com/spf13/cobra"
@@ -157,6 +158,18 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 
 		systray.AddSeparator()
 
+		mQueued := systray.AddMenuItem("Queued tasks: 0", "")
+		mQueued.Disable()
+		mRunning := systray.AddMenuItem("Running tasks: 0", "")
+		mRunning.Disable()
+		mSuccessful := systray.AddMenuItem("Successful tasks: 0", "")
+		mSuccessful.Disable()
+		mError := systray.AddMenuItem("Failed tasks: 0", "")
+		mError.Disable()
+		mCanceled := systray.AddMenuItem("Canceled tasks: 0", "")
+		mCanceled.Disable()
+
+		systray.AddSeparator()
 		res, found, _ := updateAvailable()
 		mUpdate := systray.AddMenuItem("Check for updates", "Update ffmate")
 		if found {
@@ -167,6 +180,25 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 		systray.AddSeparator()
 
 		mQuit := systray.AddMenuItem("Quit", "Quit ffmate")
+
+		go func() {
+			for {
+				q, r, ds, de, dc, _ := service.TaskService().CountAllStatus(false)
+				mQueued.SetTitle(fmt.Sprintf("Queued tasks: %d", q))
+				mRunning.SetTitle(fmt.Sprintf("Running tasks: %d", r))
+				mSuccessful.SetTitle(fmt.Sprintf("Successful tasks: %d", ds))
+				mError.SetTitle(fmt.Sprintf("Failed tasks: %d", de))
+				mCanceled.SetTitle(fmt.Sprintf("Canceled tasks: %d", dc))
+
+				if r > 0 {
+					systray.SetIcon(iconDataC)
+				} else {
+					systray.SetIcon(iconDataW)
+				}
+
+				time.Sleep(1 * time.Second)
+			}
+		}()
 
 		go func() {
 			for {

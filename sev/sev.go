@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -25,6 +26,7 @@ import (
 
 type Sev struct {
 	appStartTime time.Time
+	session      string
 
 	logger *logrus.Logger
 
@@ -88,6 +90,7 @@ func New(name string, version string, dbPath string, port uint) *Sev {
 	metrics.Init()
 
 	sev := &Sev{
+		session:      uuid.New().String(),
 		appStartTime: time.Now(),
 
 		logger: logger,
@@ -105,6 +108,10 @@ func New(name string, version string, dbPath string, port uint) *Sev {
 	sev.registerMetrics()
 
 	return sev
+}
+
+func (s *Sev) Session() string {
+	return s.session
 }
 
 func (s *Sev) AppStartTime() time.Time {

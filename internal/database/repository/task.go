@@ -9,6 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
+type statusCount struct {
+	Status string
+	Count  int
+}
+
 type Task struct {
 	DB *gorm.DB
 }
@@ -18,6 +23,41 @@ func (t *Task) Setup() {
 	if err != nil {
 		fmt.Printf("failed to initialize database: %v", err)
 	}
+}
+
+func (m *Task) CountAllStatus(session string) (queued, running, doneSuccessful, doneError, doneCanceled int, err error) {
+	var counts []statusCount
+
+	if session != "" {
+		m.DB.Model(&model.Task{}).
+			Select("status, COUNT(*) as count").
+			Group("status").
+			Where("session = ?", session).
+			Find(&counts)
+	} else {
+		m.DB.Model(&model.Task{}).
+			Select("status, COUNT(*) as count").
+			Group("status").
+			Find(&counts)
+	}
+	err = m.DB.Error
+
+	for _, r := range counts {
+		switch r.Status {
+		case "QUEUED":
+			queued = r.Count
+		case "RUNNING", "PRE_PROCESSING", "POST_PROCESSING":
+			running = r.Count
+		case "DONE_SUCCESSFUL":
+			doneSuccessful = r.Count
+		case "DONE_ERROR":
+			doneError = r.Count
+		case "DONE_CANCELED":
+			doneCanceled = r.Count
+		}
+	}
+
+	return
 }
 
 func (m *Task) List(page int, perPage int, status string) (*[]model.Task, int64, error) {
@@ -34,7 +74,7 @@ func (m *Task) List(page int, perPage int, status string) (*[]model.Task, int64,
 	return tasks, total, m.DB.Error
 }
 
-func (m *Task) Create(newTask *dto.NewTask, batch string, source string) (*model.Task, error) {
+func (m *Task) Create(newTask *dto.NewTask, batch string, source string, session string) (*model.Task, error) {
 	task := &model.Task{
 		Uuid:       uuid.NewString(),
 		Command:    &dto.RawResolved{Raw: newTask.Command},
@@ -46,6 +86,7 @@ func (m *Task) Create(newTask *dto.NewTask, batch string, source string) (*model
 		Source:     source,
 		Status:     dto.QUEUED,
 		Batch:      batch,
+		Session:    session,
 	}
 	if newTask.PreProcessing != nil {
 		task.PreProcessing = &dto.PrePostProcessing{
