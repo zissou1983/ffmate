@@ -18,6 +18,12 @@ build+frontend:
 build: build+frontend mkdir+bin 
 	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags "-s -w" -o _bin/darwin-arm64 main.go
 	CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w" -o _bin/darwin-amd64 main.go
+	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-musl-gcc   go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/linux-arm64 main.go
+	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC=x86_64-linux-musl-gcc go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/linux-amd64 main.go
+
+build+app: build
+	cp _bin/darwin-arm64 _app/ffmate_arm64/ffmate.app/Contents/MacOS/ffmate
+	cp _bin/darwin-amd64 _app/ffmate_amd64/ffmate.app/Contents/MacOS/ffmate
 
 changelog:
 	auto-changelog --output CHANGELOG.md
@@ -32,7 +38,7 @@ update: build
 
 release: update
 	git tag -a v$(version) -m "v$(version)"
-	goreleaser release --clean
+	GITHUB_TOKEN=$$(cat ~/.config/goreleaser/github_token_ffmate) goreleaser release --clean
 
 air: 
 	air
