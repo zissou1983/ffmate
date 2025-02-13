@@ -67,7 +67,3 @@ The swagger documentation can be found here **http://localhost:3000/swagger/inde
 ## Contributing
 
 Thank you for considering contributing to ffmate! A contribution guide will be released in the future.
-
-## License
-
-ffmate is MIT Licensed. Copyright © 2025 by We love media
