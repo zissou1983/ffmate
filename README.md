@@ -32,8 +32,9 @@ ffmates **featureset** (and roadmap) looks like this:
     - [x] Create task
     - [x] Update task status
 - [x] Update service    
-- [ ] Presets
-- [ ] Dashboard
+- [x] Presets
+    - [x] Global presets
+- [x] Dashboard
 - [ ] and more..
 
 If you feel like the above description fits your needs, **welcome**! 
