@@ -598,6 +598,10 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.InterfaceMap": {
+            "type": "object",
+            "additionalProperties": true
+        },
         "dto.NewPrePostProcessing": {
             "type": "object",
             "properties": {
@@ -643,6 +647,14 @@ const docTemplate = `{
                 },
                 "inputFile": {
                     "type": "string"
+                },
+                "metadata": {
+                    "description": "Additional metadata for the task",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.InterfaceMap"
+                        }
+                    ]
                 },
                 "name": {
                     "type": "string"
@@ -788,6 +800,14 @@ const docTemplate = `{
                 "inputFile": {
                     "$ref": "#/definitions/dto.RawResolved"
                 },
+                "metadata": {
+                    "description": "Additional metadata for the task",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.InterfaceMap"
+                        }
+                    ]
+                },
                 "name": {
                     "type": "string"
                 },
@@ -804,6 +824,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "progress": {
+                    "type": "number"
+                },
+                "remaining": {
                     "type": "number"
                 },
                 "source": {
