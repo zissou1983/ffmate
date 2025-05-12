@@ -24,6 +24,7 @@ func TestConfig(t *testing.T) {
 	viper.Set("tray", true)
 	viper.Set("database", "/path/to/db.sqlite")
 	viper.Set("debug", "true")
+	viper.Set("loglevel", "trace")
 	viper.Set("maxConcurrentTasks", uint(4))
 	viper.Set("sendTelemetry", true)
 
@@ -44,6 +45,7 @@ func TestConfig(t *testing.T) {
 		{"Tray", c.Tray, true, "Tray setting mismatch"},
 		{"Database", c.Database, "/path/to/db.sqlite", "Database path mismatch"},
 		{"Debug", c.Debug, "true", "Debug setting mismatch"},
+		{"Loglevel", c.Loglevel, "trace", "Loglevel mismatch"},
 		{"MaxConcurrentTasks", c.MaxConcurrentTasks, uint(4), "MaxConcurrentTasks mismatch"},
 		{"SendTelemetry", c.SendTelemetry, true, "SendTelemetry mismatch"},
 	}

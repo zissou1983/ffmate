@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"fyne.io/systray"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/welovemedia/ffmate/internal"
@@ -44,6 +45,7 @@ func init() {
 	serverCmd.PersistentFlags().BoolP("tray", "t", false, "start with tray menu (experimental)")
 	serverCmd.PersistentFlags().StringP("database", "b", "~/.ffmate/db.sqlite", "the path do the database")
 	serverCmd.PersistentFlags().UintP("max-concurrent-tasks", "m", 3, "define maximum concurrent running tasks")
+
 	serverCmd.PersistentFlags().BoolP("send-telemetry", "s", true, "enable sending anonymous telemetry data")
 
 	viper.BindPFlag("ffmpeg", serverCmd.PersistentFlags().Lookup("ffmpeg"))
@@ -58,6 +60,21 @@ func start(cmd *cobra.Command, args []string) {
 	config.Init()
 
 	s := sev.New("ffmate", config.Config().AppVersion, config.Config().Database, config.Config().Port)
+	switch config.Config().Loglevel {
+	case "debug":
+		s.Logger().SetLevel(logrus.DebugLevel)
+	case "info":
+		s.Logger().SetLevel(logrus.InfoLevel)
+	case "warn":
+		s.Logger().SetLevel(logrus.WarnLevel)
+	case "error":
+		s.Logger().SetLevel(logrus.ErrorLevel)
+	case "fatal":
+		s.Logger().SetLevel(logrus.FatalLevel)
+	case "none":
+		s.Logger().SetLevel(logrus.FatalLevel)
+		s.Logger().SetOutput(io.Discard)
+	}
 
 	s.RegisterSignalHook()
 

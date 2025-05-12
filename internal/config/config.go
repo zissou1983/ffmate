@@ -17,6 +17,7 @@ type ConfigDefinition struct {
 	Tray               bool   `mapstructure:"tray"`
 	Database           string `mapstructure:"database"`
 	Debug              string `mapstructure:"debug"`
+	Loglevel           string `mapstructure:"loglevel"`
 	MaxConcurrentTasks uint   `mapstructure:"maxConcurrentTasks"`
 	SendTelemetry      bool   `mapstructure:"sendTelemetry"`
 }

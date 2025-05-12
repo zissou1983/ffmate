@@ -49,7 +49,7 @@ var debug = debugo.New("sev")
 func New(name string, version string, dbPath string, port uint) *Sev {
 	// setup logger
 	logger := logrus.New()
-	logger.SetLevel(logrus.InfoLevel)
+	logger.SetLevel(logrus.ErrorLevel)
 	logger.SetFormatter(&CustomFormatter{})
 	logger.SetOutput(os.Stderr)
 

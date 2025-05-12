@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	_ "embed"
+	"fmt"
 	"os"
 
 	"github.com/spf13/viper"
@@ -34,5 +35,6 @@ func main() {
 
 	docs.SwaggerInfo.Schemes = []string{"http"}
 
+	fmt.Print(os.Args)
 	cmd.Execute(os.Args, frontend)
 }

@@ -24,7 +24,7 @@ type webhookCall struct {
 }
 
 func setupTestDB(t *testing.T) (*gorm.DB, *sev.Sev) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("Failed to open test database: %v", err)
 	}

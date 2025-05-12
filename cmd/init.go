@@ -23,7 +23,9 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().StringP("debug", "d", "", "set debugo namespace (eg. '*')")
+	rootCmd.PersistentFlags().StringP("loglevel", "l", "info", "set log level (eg. info)")
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+	viper.BindPFlag("loglevel", rootCmd.PersistentFlags().Lookup("loglevel"))
 }
 
 func Execute(args []string, frontendFs embed.FS) {
