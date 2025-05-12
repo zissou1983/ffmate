@@ -28,8 +28,11 @@ func (m *Watchfolder) List(page int, perPage int) (*[]model.Watchfolder, int64, 
 
 func (m *Watchfolder) First(uuid string) (*model.Watchfolder, error) {
 	var watchfolder = &model.Watchfolder{}
-	m.DB.Where("uuid = ?", uuid).Find(&watchfolder)
-	return watchfolder, m.DB.Error
+	err := m.DB.Where("uuid = ?", uuid).First(&watchfolder).Error
+	if err != nil {
+		return nil, err
+	}
+	return watchfolder, nil
 }
 
 func (m *Watchfolder) Count() (int64, error) {

@@ -130,6 +130,11 @@ func (s *Sev) DB() *gorm.DB {
 	return s.db
 }
 
+func (s *Sev) SetDB(db *gorm.DB) *gorm.DB {
+	s.db = db
+	return s.db
+}
+
 func (s *Sev) Validate() *validate.Validate {
 	return s.validate
 }
