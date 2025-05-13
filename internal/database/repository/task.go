@@ -126,7 +126,7 @@ func (m *Task) ByBatchId(uuid string, page int, perPage int) (*[]model.Task, int
 
 func (m *Task) CountNonFinishedTasksByBatchId(uuid string) (int64, error) {
 	var count int64
-	db := m.DB.Model(&model.Task{}).Where("batch = ? and status != 'DONE_SUCCESSFULL' and status != 'DONE_ERROR' and status != 'DONE_CANCELED'").Count(&count)
+	db := m.DB.Model(&model.Task{}).Where("batch = ? and status != 'DONE_SUCCESSFUL' and status != 'DONE_ERROR' and status != 'DONE_CANCELED'").Count(&count)
 	return count, db.Error
 }
 
