@@ -30,8 +30,7 @@ type fileState struct {
 }
 
 var (
-	watchfolderCtx = make(map[string]context.CancelCauseFunc)
-	watchfolderMu  = sync.Mutex{}
+	watchfolderCtx = sync.Map{}
 )
 
 func (w *Watchfolder) Init() {
@@ -39,47 +38,34 @@ func (w *Watchfolder) Init() {
 	debug.Debugf("initializing %d watchfolders", total)
 
 	go w.monitorWatchfolderUpdates()
-	defer watchfolderMu.Unlock()
 
-	watchfolderMu.Lock()
 	for _, watchfolder := range *watchfolders {
 		ctx, cancel := context.WithCancelCause(context.Background())
-		watchfolderCtx[watchfolder.Uuid] = cancel
+		watchfolderCtx.Store(watchfolder.Uuid, cancel)
 		go w.process(&watchfolder, ctx)
 	}
-
 }
 
 func (w *Watchfolder) monitorWatchfolderUpdates() {
 	for {
-		select {
-		case watchfolder := <-service.WatchfolderService().GetWatchfolderUpdates():
-			watchfolderMu.Lock()
-			if cancel, ok := watchfolderCtx[watchfolder.Uuid]; ok {
-				// cancel running watchfolder if found and remove context
-				if !watchfolder.Suspended && !watchfolder.DeletedAt.Valid {
-					cancel(errors.New("updated"))
-				} else {
-					cancel(errors.New("suspended or deleted"))
-				}
-				delete(watchfolderCtx, watchfolder.Uuid)
-			}
-
-			// if update is not suspended nor deleted, start as new watchfolder
-			if !watchfolder.Suspended && !watchfolder.DeletedAt.Valid {
-				ctx, cancel := context.WithCancelCause(context.Background())
-				watchfolderCtx[watchfolder.Uuid] = cancel
-				go w.process(watchfolder, ctx)
-			}
-			watchfolderMu.Unlock()
+		watchfolder := <-service.WatchfolderService().GetWatchfolderUpdates()
+		if cancel, ok := watchfolderCtx.Load(watchfolder.Uuid); ok {
+			// Cancel running watchfolder if found and remove context
+			cancel.(context.CancelCauseFunc)(errors.New("updated"))
+			watchfolderCtx.Delete(watchfolder.Uuid)
+		} else if !watchfolder.Suspended && !watchfolder.DeletedAt.Valid {
+			ctx, cancel := context.WithCancelCause(context.Background())
+			watchfolderCtx.Store(watchfolder.Uuid, cancel)
+			// Create a deep copy of the watchfolder to avoid race conditions
+			watchfolderCopy := *watchfolder // Create a copy of the struct
+			go w.process(&watchfolderCopy, ctx)
 		}
 	}
 }
 
 func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Context) {
-	fileStates := make(map[string]*fileState)
-	processedFiles := make(map[string]bool)
-	var mu sync.Mutex
+	fileStates := sync.Map{}
+	processedFiles := sync.Map{}
 	debug.Debugf("initialized new watchfolder watcher (uuid: %s)", watchfolder.Uuid)
 
 	for {
@@ -114,19 +100,16 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Contex
 				return nil
 			}
 
-			mu.Lock()
-			defer mu.Unlock()
-
 			// Check if the file has already been processed
-			if _, seen := processedFiles[path]; seen {
+			if _, seen := processedFiles.Load(path); seen {
 				return nil
 			}
 
 			// Determine if the file is ready for processing
-			if shouldProcessFile(path, info, fileStates, watchfolder.GrowthChecks) {
+			if shouldProcessFile(path, info, &fileStates, watchfolder.GrowthChecks) {
 				w.createTask(path, watchfolder)
-				processedFiles[path] = true
-				delete(fileStates, path) // Remove from tracking
+				processedFiles.Store(path, true) // Mark as processed
+				fileStates.Delete(path)          // Remove from tracking
 			}
 
 			return nil
@@ -184,29 +167,27 @@ func filterOutExtension(watchfolder *model.Watchfolder, path string) bool {
 }
 
 // shouldProcessFile determines if a file is ready for processing based on growth attempts.
-func shouldProcessFile(path string, info os.FileInfo, fileStates map[string]*fileState, growthChecks int) bool {
+func shouldProcessFile(path string, info os.FileInfo, fileStates *sync.Map, growthChecks int) bool {
 	if growthChecks == 0 {
 		// If no growth checks are required, the file is ready immediately
 		return true
 	}
 
 	// Get or initialize the file state
-	state, exists := fileStates[path]
-	if !exists {
-		fileStates[path] = &fileState{Size: info.Size(), Attempts: 1}
-		return false
-	}
+	state, _ := fileStates.LoadOrStore(path, &fileState{Size: info.Size(), Attempts: 1})
+	fileState := state.(*fileState)
 
 	// Check if the file size is stable
-	if info.Size() == state.Size {
-		state.Attempts++
-		if state.Attempts >= growthChecks {
+	if info.Size() == fileState.Size {
+		fileState.Attempts++
+		if fileState.Attempts >= growthChecks {
 			return true
 		}
 	} else {
 		// File size changed, reset attempts
-		state.Size = info.Size()
-		state.Attempts = 1
+		fileState.Size = info.Size()
+		fileState.Attempts = 1
+		fileStates.Store(path, fileState)
 	}
 
 	return false
