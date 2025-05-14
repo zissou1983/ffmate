@@ -1,4 +1,10 @@
 FROM alpine:3.21
+<<<<<<< HEAD
+=======
+LABEL org.opencontainers.image.source=https://github.com/welovemedia/ffmate
+LABEL org.opencontainers.image.description="FFmate is a modern and powerful automation layer built on top of FFmpeg — designed to make video and audio transcoding simpler, smarter, and easier to integrate."
+LABEL org.opencontainers.image.licenses=SSPL
+>>>>>>> dce226f (feat: add docker build steps (amd64 and arm64 manifest))
 WORKDIR /app
 RUN apk update && apk add ffmpeg
 COPY ./_bin/linux-arm64 /app/ffmate
