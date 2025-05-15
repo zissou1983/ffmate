@@ -1,69 +1,21 @@
-# ffmate: FFmpeg with a REST API, Web UI, Webhooks & Queues
+# FFmate
 
-**ffmate** bridges the gap between the raw power of FFmpeg and the need for user-friendly interfaces and robust integration capabilities. While FFmpeg is incredibly versatile, its complex command-line syntax can be daunting. **ffmate** solves this by providing simplified interfaces, ready-to-use presets, a robust queueing system, and advanced features like real-time webhook notifications and automated post-transcoding tasks
+**FFmate** is a modern and powerful automation layer built on top of [FFmpeg](https://ffmpeg.org), designed to make powerful media processing workflows accessible to everyone—through a powerful REST API, intuitive Web UI, automatic watchfolder monitoring, webhook notifications, and a smart task queue.
 
-## Key Features
+Whether you're building automated transcode pipelines, integrating media conversion into larger systems, or just want a faster way to run repeatable FFmpeg tasks, FFmate has you covered.
 
-*   **User-Friendly Interfaces:** Offers a REST API, web interface and a modern web interface for easy interaction with FFmpeg.
-  
-*   **Ready-to-Use Presets:** Includes a comprehensive set of pre-configured transcoding presets for common use cases, simplifying common tasks.
-    
-*   **Robust Queueing System:** Manages transcoding tasks with a powerful queue that supports prioritization, grouping, and efficient processing.
-    
-*   **Webhook Notifications:** Enables real-time notifications to third-party systems about *all* transcoding events (start, progress, completion, errors), facilitating seamless integration into existing workflows and allowing for automated actions to be triggered based on transcoding status.
-  
-*   **Post-Transcoding Tasks:** Allows for the execution of custom scripts *immediately* after transcoding is complete.
-    
-*   **Output Filename Wildcard Support:** Enables dynamic filename generation using wildcards.
+## 📘 Full Documentation
 
-ffmates **featureset** (and roadmap) looks like this:
+Want to dive deeper into FFmate? The documentation covers everything—from API usage to Web UI features and real-world examples
+👉 **Everything you need is now available at [https://docs.ffmate.io](https://docs.ffmate.io)**
 
-- [x] Rest API
-    - [x] Tasks
-    - [x] Webhooks
-    - [x] Swagger documentation
-- [x] Tasks
-    - [x] Status (Queue, Running, Successful/Error/Canceled)
-    - [x] Progress
-    - [x] Wildcards
-- [x] Queue
-    - [x] Max concurrent tasks
-- [x] Webhooks
-    - [x] Create task
-    - [x] Update task status
-- [x] Update service    
-- [x] Presets
-    - [x] Global presets
-- [x] Dashboard
-- [ ] and more..
+## ✨ Core Features
 
-If you feel like the above description fits your needs, **welcome**! 
-
-## Quick start guide
-
-ffmate comes with a documented commandline.
-Using **ffmate server** will start the server on the default port, 3000. This port can be overriden using the **-p** flag.
-
-Use the API to add new Tasks. A Task includes the ffmpeg command to run together with the input and output file. \
-One can make use of various wildcards:
-- ${INPUT_FILE}
-- ${OUTPUT_FILE}
-- ${DATE_YEAR}
-- ${DATE_SHORTYEAR}
-- ${DATE_MONTH}
-- ${DATE_DAY}
-- ${TIME_HOUR}
-- ${TIME_MINUTE}
-- ${TIME_SECOND}
-- ${TIMESTAMP_SECONDS}
-- ${TIMESTAMP_MILLISECONDS}
-- ${TIMESTAMP_MICROSECONDS}
-- ${TIMESTAMP_NANOSECONDS}
-
-## Swagger / Openapi
-
-The swagger documentation can be found here **http://localhost:3000/swagger/index.html** once the server is running.
-
-## Contributing
-
-Thank you for considering contributing to ffmate! A contribution guide will be released in the future.
+- **REST API** – Submit and manage FFmpeg tasks programmatically  
+- **Web UI** – Monitor and control jobs in real time, no terminal required  
+- **Watchfolders** – Automatically process files dropped into a directory  
+- **Presets** – Ready-made set of pre-configured transcoding presets for common use cases  
+- **Webhooks** – Get real-time notifications for task events  
+- **Dynamic Wildcards** – Automate file naming and folder structures  
+- **Pre/Post Processing** – Run custom scripts before or after each task to automate complex workflow steps
+- **Built-in Queue** – Manage task execution with priority control and smart concurrency handling
