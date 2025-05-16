@@ -67,3 +67,30 @@ func (s *presetSvc) NewPreset(newPreset *dto.NewPreset) (*model.Preset, error) {
 
 	return w, err
 }
+
+func (s *presetSvc) UpdatePreset(presetUuid string, newPreset *dto.NewPreset) (*model.Preset, error) {
+	p, err := s.FindByUuid(presetUuid)
+	if err != nil {
+		return nil, err
+	}
+
+	p.Name = newPreset.Name
+	p.Description = newPreset.Description
+	p.Command = newPreset.Command
+	p.PreProcessing = newPreset.PreProcessing
+	p.PostProcessing = newPreset.PostProcessing
+	p.OutputFile = newPreset.OutputFile
+	p.Priority = newPreset.Priority
+
+	err = s.presetRepository.Update(p)
+	if err != nil {
+		s.sev.Logger().Warnf("failed to update preset (uuid: %s): %+v", p.Uuid, err)
+		return nil, err
+	}
+
+	s.sev.Metrics().Gauge("preset.updated").Inc()
+	WebhookService().Fire(dto.PRESET_UPDATED, p.ToDto())
+	WebsocketService().Broadcast(PRESET_UPDATED, p.ToDto())
+
+	return p, err
+}

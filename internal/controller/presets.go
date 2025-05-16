@@ -22,6 +22,7 @@ func (c *PresetController) Setup(s *sev.Sev) {
 	c.sev = s
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deletePreset)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addPreset)
+	s.Gin().PUT(c.Prefix+c.getEndpoint()+"/:uuid", c.updatePreset)
 	s.Gin().GET(c.Prefix+c.getEndpoint(), interceptor.PageLimit, c.listPresets)
 }
 
@@ -81,6 +82,28 @@ func (c *PresetController) addPreset(gin *gin.Context) {
 	c.sev.Validate().Bind(gin, newPreset)
 
 	preset, err := service.PresetService().NewPreset(newPreset)
+	if err != nil {
+		gin.JSON(400, exceptions.HttpBadRequest(err))
+		return
+	}
+
+	gin.JSON(200, preset.ToDto())
+}
+
+// @Summary Update a preset
+// @Description	Update a preset
+// @Tags presets
+// @Accept json
+// @Param request body dto.NewPreset true "new preset"
+// @Produce json
+// @Success 200 {object} dto.Preset
+// @Router /presets [put]
+func (c *PresetController) updatePreset(gin *gin.Context) {
+	uuid := gin.Param("uuid")
+	newPreset := &dto.NewPreset{}
+	c.sev.Validate().Bind(gin, newPreset)
+
+	preset, err := service.PresetService().UpdatePreset(uuid, newPreset)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return

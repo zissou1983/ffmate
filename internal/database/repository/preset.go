@@ -22,6 +22,11 @@ func (m *Preset) List(page int, perPage int) (*[]model.Preset, int64, error) {
 	return presets, total, m.DB.Error
 }
 
+func (m *Preset) Update(w *model.Preset) error {
+	m.DB.Save(w)
+	return m.DB.Error
+}
+
 func (m *Preset) Delete(w *model.Preset) error {
 	m.DB.Delete(w)
 	return m.DB.Error

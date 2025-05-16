@@ -15,6 +15,7 @@ var gauges = map[string]prometheus.Gauge{
 	"task.restarted": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "task_restarted", Help: "Number of restarted tasks"}),
 
 	"preset.created": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "preset_created", Help: "Number of created presets"}),
+	"preset.updated": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "preset_updated", Help: "Number of updated presets"}),
 	"preset.deleted": prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "preset_deleted", Help: "Number of deleted presets"}),
 
 	"webhook.created":  prometheus.NewGauge(prometheus.GaugeOpts{Namespace: namespace, Name: "webhook_created", Help: "Number of created webhooks"}),
