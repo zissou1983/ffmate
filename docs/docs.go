@@ -72,6 +72,38 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "description": "Update a preset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "presets"
+                ],
+                "summary": "Update a preset",
+                "parameters": [
+                    {
+                        "description": "new preset",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewPreset"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Preset"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Add a new preset",
                 "consumes": [
@@ -106,6 +138,24 @@ const docTemplate = `{
             }
         },
         "/presets/{uuid}": {
+            "get": {
+                "description": "Get a preset",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "presets"
+                ],
+                "summary": "Get a preset",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Preset"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete a preset by its uuid",
                 "produces": [
@@ -404,6 +454,38 @@ const docTemplate = `{
             }
         },
         "/watchfolder": {
+            "put": {
+                "description": "Update a watchfolder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "watchfolders"
+                ],
+                "summary": "Update a watchfolder",
+                "parameters": [
+                    {
+                        "description": "new watchfolder",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewWatchfolder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Watchfolder"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Add a new watchfolder",
                 "consumes": [
