@@ -96,7 +96,7 @@ func TestWatchfolderService(t *testing.T) {
 		wf := (*wfs)[0]
 		wf.GrowthChecks = 10
 
-		updated, err := WatchfolderService().UpdateWatchfolder(&wf)
+		updated, err := WatchfolderService().UpdateWatchfolderInternal(&wf)
 		if err != nil {
 			t.Fatalf("Failed to update watchfolder: %v", err)
 		}

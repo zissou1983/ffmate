@@ -21,6 +21,7 @@ type WatchfolderController struct {
 func (c *WatchfolderController) Setup(s *sev.Sev) {
 	c.sev = s
 	s.Gin().DELETE(c.Prefix+c.getEndpoint()+"/:uuid", c.deleteWatchfolder)
+	s.Gin().PUT(c.Prefix+c.getEndpoint()+"/:uuid", c.updateWatchfolder)
 	s.Gin().POST(c.Prefix+c.getEndpoint(), c.addWatchfolder)
 	s.Gin().GET(c.Prefix+c.getEndpoint(), interceptor.PageLimit, c.listWatchfolders)
 	s.Gin().GET(c.Prefix+c.getEndpoint()+"/:uuid", c.getWatchfolder)
@@ -100,6 +101,28 @@ func (c *WatchfolderController) addWatchfolder(gin *gin.Context) {
 	c.sev.Validate().Bind(gin, newWatchfolder)
 
 	watchfolder, err := service.WatchfolderService().NewWatchfolder(newWatchfolder)
+	if err != nil {
+		gin.JSON(400, exceptions.HttpBadRequest(err))
+		return
+	}
+
+	gin.JSON(200, watchfolder.ToDto())
+}
+
+// @Summary Update a watchfolder
+// @Description Update a watchfolder
+// @Tags watchfolders
+// @Accept json
+// @Param request body dto.NewWatchfolder true "new watchfolder"
+// @Produce json
+// @Success 200 {object} dto.Watchfolder
+// @Router /watchfolder [put]
+func (c *WatchfolderController) updateWatchfolder(gin *gin.Context) {
+	uuid := gin.Param("uuid")
+	newWatchfolder := &dto.NewWatchfolder{}
+	c.sev.Validate().Bind(gin, newWatchfolder)
+
+	watchfolder, err := service.WatchfolderService().UpdateWatchfolder(uuid, newWatchfolder)
 	if err != nil {
 		gin.JSON(400, exceptions.HttpBadRequest(err))
 		return

@@ -29,7 +29,7 @@ func (s *watchfolderSvc) GetWatchfolderById(uuid string) (*model.Watchfolder, er
 	return s.watchfolderRepository.First(uuid)
 }
 
-func (s *watchfolderSvc) UpdateWatchfolder(watchfolder *model.Watchfolder) (*model.Watchfolder, error) {
+func (s *watchfolderSvc) UpdateWatchfolderInternal(watchfolder *model.Watchfolder) (*model.Watchfolder, error) {
 	w, err := s.watchfolderRepository.Update(watchfolder)
 	if err == nil {
 		s.sev.Metrics().Gauge("watchfolder.updated").Inc()
@@ -80,4 +80,21 @@ func (s *watchfolderSvc) NewWatchfolder(newWatchfolder *dto.NewWatchfolder) (*mo
 	WebsocketService().Broadcast(WATCHFOLDER_CREATED, w.ToDto())
 
 	return w, err
+}
+
+func (s *watchfolderSvc) UpdateWatchfolder(watchfolderUuid string, newWatchfolder *dto.NewWatchfolder) (*model.Watchfolder, error) {
+	w, err := s.GetWatchfolderById(watchfolderUuid)
+	if err != nil {
+		return nil, err
+	}
+
+	w.Name = newWatchfolder.Name
+	w.Description = newWatchfolder.Description
+	w.Path = newWatchfolder.Path
+	w.Preset = newWatchfolder.Preset
+	w.GrowthChecks = newWatchfolder.GrowthChecks
+	w.Interval = newWatchfolder.Interval
+	w.Filter = newWatchfolder.Filter
+
+	return s.UpdateWatchfolderInternal(w)
 }

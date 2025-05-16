@@ -121,7 +121,7 @@ func (w *Watchfolder) process(watchfolder *model.Watchfolder, ctx context.Contex
 		}
 
 		w.Sev.Metrics().Gauge("watchfolder.executed").Inc()
-		service.WatchfolderService().UpdateWatchfolder(watchfolder)
+		service.WatchfolderService().UpdateWatchfolderInternal(watchfolder)
 		time.Sleep(time.Duration(watchfolder.Interval * int(time.Second)))
 	}
 }
