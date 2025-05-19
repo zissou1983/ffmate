@@ -47,6 +47,7 @@ func testPresetCreation() error {
 	if err != nil || resp.StatusCode() >= 400 {
 		return fmt.Errorf("failed to create preset: %v", resp)
 	} else {
+		fmt.Println(preset)
 		fmt.Printf("Created '%s' (uuid: %s)\n", preset.Name, preset.Uuid)
 	}
 

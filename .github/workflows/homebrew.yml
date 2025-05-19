@@ -22,8 +22,8 @@ jobs:
 
     - name: Download Release Assets
       run: |
-        curl -L -o ffmate_Darwin_x86_64.tar.gz  https://github.com/welovemedia/ffmate/releases/download/${RELEASE_NAME}/ffmate_Darwin_x86_64.tar.gz 
-        curl -L -o ffmate_Darwin_arm64.tar.gz  https://github.com/welovemedia/ffmate/releases/download/${RELEASE_NAME}/ffmate_Darwin_arm64.tar.gz 
+        curl -L -o ffmate_Darwin_x86_64.tar.gz  https://github.com/welovemedia/ffmate/releases/download/${RELEASE_NAME}/ffmate_Darwin_x86_64.tar.gz
+        curl -L -o ffmate_Darwin_arm64.tar.gz  https://github.com/welovemedia/ffmate/releases/download/${RELEASE_NAME}/ffmate_Darwin_arm64.tar.gz
 
     - name: Compute SHA256 Sums
       run: |
