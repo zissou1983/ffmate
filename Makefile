@@ -55,6 +55,7 @@ changelog:
 
 swagger:
 	swag init --outputTypes go
+	swag init --outputTypes json -o .
 
 update: build
 	rm -rf _update

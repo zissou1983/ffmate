@@ -17,14 +17,14 @@ var version string
 var frontend embed.FS
 
 // @title ffmate API
-// @version {will be injected}
+// @version
 // @description	A wrapper around ffmpeg
 
 // @contact.name We love media
 // @contact.email sev@welovemedia.io
 
-// @license.name MIT
-// @license.url https://en.wikipedia.org/wiki/MIT_License
+// @license.name SSPL
+// @license.url https://www.mongodb.com/legal/licensing/server-side-public-license
 
 // @host localhost
 // @BasePath /api/v1
