@@ -38,7 +38,7 @@ func (c *WatchfolderController) getWatchfolder(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	task, err := service.WatchfolderService().GetWatchfolderById(uuid)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/watchfolder#getting-a-single-watchfolder"))
 		return
 	}
 
@@ -57,7 +57,7 @@ func (c *WatchfolderController) deleteWatchfolder(gin *gin.Context) {
 	err := service.WatchfolderService().DeleteWatchfolder(uuid)
 
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/watchfolder#deleting-a-watchfolder"))
 		return
 	}
 
@@ -73,7 +73,7 @@ func (c *WatchfolderController) deleteWatchfolder(gin *gin.Context) {
 func (c *WatchfolderController) listWatchfolders(gin *gin.Context) {
 	watchfolders, total, err := service.WatchfolderService().ListWatchfolders(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/watchfolder#listing-watchfolders"))
 		return
 	}
 
@@ -102,7 +102,7 @@ func (c *WatchfolderController) addWatchfolder(gin *gin.Context) {
 
 	watchfolder, err := service.WatchfolderService().NewWatchfolder(newWatchfolder)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/watchfolder#creating-a-watchfolder"))
 		return
 	}
 
@@ -124,7 +124,7 @@ func (c *WatchfolderController) updateWatchfolder(gin *gin.Context) {
 
 	watchfolder, err := service.WatchfolderService().UpdateWatchfolder(uuid, newWatchfolder)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/watchfolder#updating-a-watchfolder"))
 		return
 	}
 

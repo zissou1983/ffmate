@@ -39,7 +39,7 @@ func (c *PresetController) deletePreset(gin *gin.Context) {
 	err := service.PresetService().DeletePreset(uuid)
 
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/presets#deleting-a-preset"))
 		return
 	}
 
@@ -55,7 +55,7 @@ func (c *PresetController) deletePreset(gin *gin.Context) {
 func (c *PresetController) listPresets(gin *gin.Context) {
 	presets, total, err := service.PresetService().ListPresets(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/presets#listing-presets"))
 		return
 	}
 
@@ -84,7 +84,7 @@ func (c *PresetController) addPreset(gin *gin.Context) {
 
 	preset, err := service.PresetService().NewPreset(newPreset)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/presets#creating-a-preset"))
 		return
 	}
 
@@ -102,7 +102,7 @@ func (c *PresetController) getPreset(gin *gin.Context) {
 
 	preset, err := service.PresetService().FindByUuid(presetUuid)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/presets#getting-a-single-preset"))
 		return
 	}
 
@@ -124,7 +124,7 @@ func (c *PresetController) updatePreset(gin *gin.Context) {
 
 	preset, err := service.PresetService().UpdatePreset(uuid, newPreset)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/presets#updating-a-preset"))
 		return
 	}
 

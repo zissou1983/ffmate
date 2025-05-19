@@ -5,6 +5,7 @@ type HttpError struct {
 	Code     string `json:"code"`
 	Error    string `json:"err"`
 	Message  string `json:"message"`
+	Docs     string `json:"docs,omitempty"`
 }
 
 func InternalServerError(err error) *HttpError {
@@ -15,8 +16,8 @@ func HttpInvalidRequest() *HttpError {
 	return &HttpError{HttpCode: 400, Code: "002.000.0002", Error: "invalid.request", Message: "invalid request"}
 }
 
-func HttpBadRequest(err error) *HttpError {
-	return &HttpError{HttpCode: 400, Code: "002.000.0003", Error: "bad.request", Message: err.Error()}
+func HttpBadRequest(err error, docs string) *HttpError {
+	return &HttpError{HttpCode: 400, Code: "002.000.0003", Error: "bad.request", Message: err.Error(), Docs: docs}
 }
 
 func HttpInvalidBody(err error) *HttpError {

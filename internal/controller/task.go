@@ -40,7 +40,7 @@ func (c *TaskController) Setup(s *sev.Sev) {
 func (c *TaskController) listTasks(gin *gin.Context) {
 	tasks, total, err := service.TaskService().ListTasks(gin.GetInt("page"), gin.GetInt("perPage"), gin.GetString("status"))
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/tasks#monitoring-all-tasks"))
 		return
 	}
 
@@ -67,7 +67,7 @@ func (c *TaskController) deleteTask(gin *gin.Context) {
 	err := service.TaskService().DeleteTask(uuid)
 
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/tasks#deleting-a-task"))
 		return
 	}
 
@@ -93,7 +93,7 @@ func (c *TaskController) addTasks(gin *gin.Context) {
 
 	tasks, err := service.TaskService().NewTasks(newTasks)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/tasks#submitting-multiple-tasks-as-a-batch"))
 		return
 	}
 
@@ -120,7 +120,7 @@ func (c *TaskController) addTask(gin *gin.Context) {
 
 	task, err := service.TaskService().NewTask(newTask, "", "api")
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/tasks#creating-a-task"))
 		return
 	}
 
@@ -138,7 +138,7 @@ func (c *TaskController) getTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	task, err := service.TaskService().GetTaskByUuid(uuid)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/tasks#monitoring-a-task"))
 		return
 	}
 
@@ -156,7 +156,7 @@ func (c *TaskController) getTasks(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	tasks, total, err := service.TaskService().GetTasksByBatchId(uuid, gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/tasks#monitoring-all-tasks"))
 		return
 	}
 
@@ -182,7 +182,7 @@ func (c *TaskController) cancelTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	task, err := service.TaskService().CancelTask(uuid)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/tasks#canceling-a-task"))
 		return
 	}
 
@@ -200,7 +200,7 @@ func (c *TaskController) restartTask(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	task, err := service.TaskService().RestartTask(uuid)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/tasks#restarting-a-task"))
 		return
 	}
 

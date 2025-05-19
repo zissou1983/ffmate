@@ -37,7 +37,7 @@ func (c *WebhookController) deleteWebhook(gin *gin.Context) {
 	err := service.WebhookService().DeleteWebhook(uuid)
 
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/webhooks#deleting-a-webhook"))
 		return
 	}
 
@@ -53,7 +53,7 @@ func (c *WebhookController) deleteWebhook(gin *gin.Context) {
 func (c *WebhookController) listWebhooks(gin *gin.Context) {
 	webhooks, total, err := service.WebhookService().ListWebhooks(gin.GetInt("page"), gin.GetInt("perPage"))
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/webhooks#listing-all-webhooks"))
 		return
 	}
 
@@ -82,7 +82,7 @@ func (c *WebhookController) addWebhook(gin *gin.Context) {
 
 	webhook, err := service.WebhookService().NewWebhook(newWebhook)
 	if err != nil {
-		gin.JSON(400, exceptions.HttpBadRequest(err))
+		gin.JSON(400, exceptions.HttpBadRequest(err, "https://docs.ffmate.io/docs/webhooks#creating-a-webhook"))
 		return
 	}
 
