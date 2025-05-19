@@ -84,7 +84,9 @@ func (c *TaskController) deleteTask(gin *gin.Context) {
 // @Router /tasks/batch [post]
 func (c *TaskController) addTasks(gin *gin.Context) {
 	newTasks := &[]dto.NewTask{}
-	c.sev.Validate().BindWithoutValidation(gin, newTasks)
+	if !c.sev.Validate().BindWithoutValidation(gin, newTasks) {
+		return
+	}
 
 	// bind and validation in a single step throws a nil error, so we separate those tasks
 	for _, t := range *newTasks {
@@ -116,7 +118,9 @@ func (c *TaskController) addTasks(gin *gin.Context) {
 // @Router /tasks [post]
 func (c *TaskController) addTask(gin *gin.Context) {
 	newTask := &dto.NewTask{}
-	c.sev.Validate().Bind(gin, newTask)
+	if !c.sev.Validate().Bind(gin, newTask) {
+		return
+	}
 
 	task, err := service.TaskService().NewTask(newTask, "", "api")
 	if err != nil {

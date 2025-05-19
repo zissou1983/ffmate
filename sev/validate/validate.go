@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator"
 	"github.com/welovemedia/ffmate/sev/exceptions"
 )
@@ -56,33 +57,35 @@ func (s *Validate) Param(name string, regex string) gin.HandlerFunc {
 	}
 }
 
-func (s *Validate) Bind(gin *gin.Context, v interface{}) {
-	err := gin.BindJSON(v)
+func (s *Validate) Bind(gin *gin.Context, v interface{}) bool {
+	err := gin.ShouldBindWith(v, binding.JSON)
 	if err != nil {
 		e := exceptions.HttpInvalidBody(err)
 		gin.AbortWithStatusJSON(e.HttpCode, e)
-		return
+		return false
 	}
 
 	err = val.Struct(v)
 	if err != nil {
 		e := exceptions.HttpInvalidBody(err)
 		gin.AbortWithStatusJSON(e.HttpCode, e)
-		return
+		return false
 	}
 
 	gin.Next()
+	return true
 }
 
-func (s *Validate) BindWithoutValidation(gin *gin.Context, v interface{}) {
-	err := gin.BindJSON(v)
+func (s *Validate) BindWithoutValidation(gin *gin.Context, v interface{}) bool {
+	err := gin.ShouldBindWith(v, binding.JSON)
 	if err != nil {
 		e := exceptions.HttpInvalidBody(err)
 		gin.AbortWithStatusJSON(e.HttpCode, e)
-		return
+		return false
 	}
 
 	gin.Next()
+	return true
 }
 
 func (s *Validate) ValidateOnly(gin *gin.Context, v interface{}) {

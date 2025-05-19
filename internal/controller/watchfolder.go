@@ -98,7 +98,9 @@ func (c *WatchfolderController) listWatchfolders(gin *gin.Context) {
 // @Router /watchfolder [post]
 func (c *WatchfolderController) addWatchfolder(gin *gin.Context) {
 	newWatchfolder := &dto.NewWatchfolder{}
-	c.sev.Validate().Bind(gin, newWatchfolder)
+	if !c.sev.Validate().Bind(gin, newWatchfolder) {
+		return
+	}
 
 	watchfolder, err := service.WatchfolderService().NewWatchfolder(newWatchfolder)
 	if err != nil {
@@ -120,7 +122,9 @@ func (c *WatchfolderController) addWatchfolder(gin *gin.Context) {
 func (c *WatchfolderController) updateWatchfolder(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	newWatchfolder := &dto.NewWatchfolder{}
-	c.sev.Validate().Bind(gin, newWatchfolder)
+	if !c.sev.Validate().Bind(gin, newWatchfolder) {
+		return
+	}
 
 	watchfolder, err := service.WatchfolderService().UpdateWatchfolder(uuid, newWatchfolder)
 	if err != nil {

@@ -80,7 +80,9 @@ func (c *PresetController) listPresets(gin *gin.Context) {
 // @Router /presets [post]
 func (c *PresetController) addPreset(gin *gin.Context) {
 	newPreset := &dto.NewPreset{}
-	c.sev.Validate().Bind(gin, newPreset)
+	if !c.sev.Validate().Bind(gin, newPreset) {
+		return
+	}
 
 	preset, err := service.PresetService().NewPreset(newPreset)
 	if err != nil {
@@ -120,7 +122,9 @@ func (c *PresetController) getPreset(gin *gin.Context) {
 func (c *PresetController) updatePreset(gin *gin.Context) {
 	uuid := gin.Param("uuid")
 	newPreset := &dto.NewPreset{}
-	c.sev.Validate().Bind(gin, newPreset)
+	if !c.sev.Validate().Bind(gin, newPreset) {
+		return
+	}
 
 	preset, err := service.PresetService().UpdatePreset(uuid, newPreset)
 	if err != nil {

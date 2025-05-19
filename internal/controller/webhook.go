@@ -78,7 +78,9 @@ func (c *WebhookController) listWebhooks(gin *gin.Context) {
 // @Router /webhooks [post]
 func (c *WebhookController) addWebhook(gin *gin.Context) {
 	newWebhook := &dto.NewWebhook{}
-	c.sev.Validate().Bind(gin, newWebhook)
+	if !c.sev.Validate().Bind(gin, newWebhook) {
+		return
+	}
 
 	webhook, err := service.WebhookService().NewWebhook(newWebhook)
 	if err != nil {
