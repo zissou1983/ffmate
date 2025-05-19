@@ -33,7 +33,7 @@ func (c *WebController) Setup(s *sev.Sev) {
 }
 
 func mustFS(frontend embed.FS) http.FileSystem {
-	sub, err := fs.Sub(frontend, "ui/.output/public")
+	sub, err := fs.Sub(frontend, "ui-build")
 
 	if err != nil {
 		panic(err)

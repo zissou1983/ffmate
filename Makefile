@@ -22,6 +22,7 @@ mkdir+bin:
 
 build+frontend:
 	cd ui && pnpm i && pnpm run generate
+	cp -r ui/.output/public/ ui-build
 
 build: test swagger build+frontend mkdir+bin 
 	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags "-s -w" -o _bin/darwin-arm64 main.go

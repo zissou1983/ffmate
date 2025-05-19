@@ -13,7 +13,7 @@ import (
 //go:embed .version
 var version string
 
-//go:embed all:ui/.output/public/*
+//go:embed all:ui-build/*
 var frontend embed.FS
 
 // @title ffmate API

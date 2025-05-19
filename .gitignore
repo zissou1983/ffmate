@@ -11,3 +11,5 @@ moo.txt
 uptime.sh
 TODO
 _app
+ui-build/
++ui-build/index.html
