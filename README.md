@@ -15,6 +15,10 @@ FFmate is built with extensibility in mind. Here's how you can leverage its core
 - **Pre/Post Processing** – Run custom scripts before or after each task to automate complex workflow steps
 - **Built-in Queue** – Manage task execution with priority control and smart concurrency handling
 
+## 📚 Product Documentation
+
+Want to dive deeper into FFmate? The documentation covers everything—from API usage to Web UI features and real-world examples 👉 Everything you need is now available at [https://docs.ffmate.io](https://docs.ffmate.io)
+
 ## 🚀 Getting Started for Developers
 
 To start extending, integrating with, or contributing to FFmate:
@@ -127,7 +131,7 @@ graph TD
     classDef ffbin  fill:#ff99cc,stroke:#b3366b,stroke-width:1.2px,color:#000000;
 ```
 
-** Code Structure (illustrative):**
+**Code Structure:**
 
 *   **`main.go`**: Main application entry point, CLI command parsing (using Cobra), server initialization.
 *   **`/internal/`**: Core application logic, not intended for direct import by other projects.
@@ -153,11 +157,6 @@ graph TD
 *   **Services (`/internal/services/`):** Modify or add business logic for features.
 *   **Core Logic (`/internal/ffmpeg/`):** Enhance task processing, FFmpeg interaction, or pre/post-script handling.
 *   **Web UI (`/ui/`):** The ffmate-ui repository as submodule.
-
-## 📚 Product Documentation
-
-Want to dive deeper into FFmate? The documentation covers everything—from API usage to Web UI features and real-world examples 👉 Everything you need is now available at [https://docs.ffmate.io](https://docs.ffmate.io)
-
 
 ## 🤝 Contributing to FFmate Core
 
