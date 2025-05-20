@@ -41,13 +41,13 @@ docker+build:
 docker+push: 
 	docker push ${DOCKER_REPO}:${VERSION}-amd64
 	docker push ${DOCKER_REPO}:${VERSION}-arm64
-	docker push ${DOCKER_REPO}:latest
+#	docker push ${DOCKER_REPO}:latest
 
 docker+manifest:
 	docker manifest create ${DOCKER_REPO}:${VERSION} --amend ${DOCKER_REPO}:${VERSION}-amd64 ${DOCKER_REPO}:${VERSION}-arm64
-	docker manifest push ${DOCKER_REPO}:${VERSION}
+#	docker manifest push ${DOCKER_REPO}:${VERSION}
 	docker manifest create ${DOCKER_REPO}:latest --amend ${DOCKER_REPO}:${VERSION}-amd64 ${DOCKER_REPO}:${VERSION}-arm64
-	docker manifest push ${DOCKER_REPO}:latest
+#	docker manifest push ${DOCKER_REPO}:latest
 
 docker+release: docker+build docker+push docker+manifest
 
