@@ -184,4 +184,4 @@ Interested in contributing directly to FFmate's development? We welcome contribu
 
 ## 📄 License
 
-This project is licensed under the **Server Side Public License (SSPL), Version 1**. See the [LICENSE](LICENSE) file for full details.
+This project is licensed under the **AGPL-3.0**. See the [LICENSE](LICENSE) file for full details.

@@ -14,8 +14,8 @@ const docTemplate = `{
             "email": "sev@welovemedia.io"
         },
         "license": {
-            "name": "SSPL",
-            "url": "https://www.mongodb.com/legal/licensing/server-side-public-license"
+            "name": "AGPL-3.0",
+            "url": "https://github.com/welovemedia/ffmate/blob/main/LICENSE"
         },
         "version": "{{.Version}}"
     },

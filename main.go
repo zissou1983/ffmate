@@ -23,8 +23,8 @@ var frontend embed.FS
 // @contact.name We love media
 // @contact.email sev@welovemedia.io
 
-// @license.name SSPL
-// @license.url https://www.mongodb.com/legal/licensing/server-side-public-license
+// @license.name AGPL-3.0
+// @license.url https://github.com/welovemedia/ffmate/blob/main/LICENSE
 
 // @host localhost
 // @BasePath /api/v1
