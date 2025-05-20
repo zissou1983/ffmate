@@ -15,7 +15,7 @@ const docTemplate = `{
         },
         "license": {
             "name": "AGPL-3.0",
-            "url": "https://github.com/welovemedia/ffmate/blob/main/LICENSE"
+            "url": "https://opensource.org/license/agpl-v3"
         },
         "version": "{{.Version}}"
     },

@@ -24,7 +24,7 @@ var frontend embed.FS
 // @contact.email sev@welovemedia.io
 
 // @license.name AGPL-3.0
-// @license.url https://github.com/welovemedia/ffmate/blob/main/LICENSE
+// @license.url https://opensource.org/license/agpl-v3
 
 // @host localhost
 // @BasePath /api/v1
