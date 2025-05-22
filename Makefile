@@ -25,10 +25,18 @@ build+frontend:
 	cp -r ui/.output/public/ ui-build
 
 build: test swagger build+frontend mkdir+bin 
+
+build+darwin:
 	CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags "-s -w" -o _bin/darwin-arm64 main.go
 	CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w" -o _bin/darwin-amd64 main.go
+
+build+linux:
 	CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=aarch64-linux-musl-gcc go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/linux-arm64 main.go
 	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC=x86_64-linux-musl-gcc go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/linux-amd64 main.go
+
+build+windows:
+	CGO_ENABLED=1 GOOS=windows GOARCH=arm64 go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/windows-arm64 main.go
+	CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/windows-amd64 main.go
 
 build+app: build
 	cp _bin/darwin-arm64 _app/ffmate_arm64/ffmate.app/Contents/MacOS/ffmate
@@ -41,13 +49,12 @@ docker+build:
 docker+push: 
 	docker push ${DOCKER_REPO}:${VERSION}-amd64
 	docker push ${DOCKER_REPO}:${VERSION}-arm64
-#	docker push ${DOCKER_REPO}:latest
 
 docker+manifest:
 	docker manifest create ${DOCKER_REPO}:${VERSION} --amend ${DOCKER_REPO}:${VERSION}-amd64 ${DOCKER_REPO}:${VERSION}-arm64
-#	docker manifest push ${DOCKER_REPO}:${VERSION}
+	docker manifest push ${DOCKER_REPO}:${VERSION}
 	docker manifest create ${DOCKER_REPO}:latest --amend ${DOCKER_REPO}:${VERSION}-amd64 ${DOCKER_REPO}:${VERSION}-arm64
-#	docker manifest push ${DOCKER_REPO}:latest
+	docker manifest push ${DOCKER_REPO}:latest
 
 docker+release: docker+build docker+push docker+manifest
 
