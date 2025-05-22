@@ -179,7 +179,7 @@ Interested in contributing directly to FFmate's development? We welcome contribu
 
 ## 💬 Developer Community & Support
 
-*   **Discord (Developer Chat):** Join our [FFmate Community on Discord](https://discord.gg/ef6gQGr2) for discussions on extending FFmate, asking technical questions, and sharing your projects.
+*   **Discord (Developer Chat):** Join our [FFmate Community on Discord](https://discord.gg/NzfeHn37jT) for discussions on extending FFmate, asking technical questions, and sharing your projects.
 *   **GitHub Issues:** Report bugs, discuss potential enhancements [GitHub Issues](https://github.com/welovemedia/ffmate/issues).
 
 ## 📄 License
