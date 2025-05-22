@@ -1,5 +1,3 @@
-//go:build linux || darwin
-
 package wildcards
 
 import (
@@ -13,7 +11,7 @@ import (
 )
 
 func Replace(input string, inputFile string, outputFile string, source string, escapePaths bool) string {
-	if escapePaths {
+	if escapePaths && runtime.GOOS != "windows" {
 		inputFile = strings.ReplaceAll(inputFile, " ", "\\ ")
 		outputFile = strings.ReplaceAll(outputFile, " ", "\\ ")
 	}

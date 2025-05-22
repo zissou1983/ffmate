@@ -35,8 +35,6 @@ build+linux:
 	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC=x86_64-linux-musl-gcc go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/linux-amd64 main.go
 
 build+windows:
-	CGO_ENABLED=1 GOOS=windows GOARCH=arm64 go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/windows-arm64 main.go
-	CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -linkmode external -extldflags "-static"" -o _bin/windows-amd64 main.go
 
 build+app: build
 	cp _bin/darwin-arm64 _app/ffmate_arm64/ffmate.app/Contents/MacOS/ffmate
