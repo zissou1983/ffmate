@@ -16,6 +16,8 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/welovemedia/ffmate/docs"
+	"github.com/welovemedia/ffmate/internal/database/model"
+	"github.com/welovemedia/ffmate/internal/database/repository"
 	"github.com/welovemedia/ffmate/sev/metrics"
 	"github.com/welovemedia/ffmate/sev/validate"
 	"github.com/yosev/debugo"
@@ -26,6 +28,7 @@ import (
 
 type Sev struct {
 	appStartTime time.Time
+	client       *model.Client
 	session      string
 
 	logger *logrus.Logger
@@ -67,7 +70,7 @@ func New(name string, version string, dbPath string, port uint) *Sev {
 	docs.SwaggerInfo.Host += fmt.Sprintf(":%d", port)
 	ginInstance.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	// seutp db
+	// setup db
 	if strings.HasPrefix(dbPath, "~") {
 		dbPath = filepath.Join(os.Getenv("HOME"), dbPath[1:])
 	}
@@ -78,18 +81,25 @@ func New(name string, version string, dbPath string, port uint) *Sev {
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
 		Logger: gormLogger.Default.LogMode(gormLogger.Silent),
 	})
-
 	if err != nil {
 		logger.Errorf("failed to initialize database connection (path: %s): %v", dbPath, err)
 		os.Exit(1)
 	} else {
 		debug.Debugf("initialized database connection (path: %s)", dbPath)
 	}
+	clientRepository := &repository.Client{DB: db}
+	clientRepository.Setup()
+	client, err := clientRepository.GetOrCreateClient()
+	if err != nil {
+		logger.Errorf("failed to get or create client: %v", err)
+		os.Exit(1)
+	}
 
 	metrics := &metrics.Metrics{Logger: logger}
 	metrics.Init()
 
 	sev := &Sev{
+		client:       client,
 		session:      uuid.New().String(),
 		appStartTime: time.Now(),
 
@@ -108,6 +118,10 @@ func New(name string, version string, dbPath string, port uint) *Sev {
 	sev.registerMetrics()
 
 	return sev
+}
+
+func (s *Sev) Client() *model.Client {
+	return s.client
 }
 
 func (s *Sev) Session() string {

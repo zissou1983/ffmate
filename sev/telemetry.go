@@ -17,6 +17,7 @@ import (
 type Stats struct {
 	AppName    string `json:"appName"`
 	AppVersion string `json:"appVersion"`
+	ClientId   string `json:"clientId"`
 
 	RuntimeDuration int64 `json:"runtimeDuration"`
 
@@ -35,6 +36,7 @@ func (s *Sev) SendTelemetry(targetUrl string, statistics map[string]interface{},
 	stats := Stats{
 		AppName:    config.Config().AppName,
 		AppVersion: config.Config().AppVersion,
+		ClientId:   s.Client().Uuid,
 
 		RuntimeDuration: time.Since(s.AppStartTime()).Milliseconds(),
 
@@ -94,7 +96,7 @@ func (s *Sev) SendTelemetry(targetUrl string, statistics map[string]interface{},
 
 	_, err = client.Do(req)
 	if err != nil {
-		s.Logger().Warnf("failed to send telemtry data: %+v", err)
+		s.Logger().Warnf("failed to send telemetry data: %+v", err)
 	} else {
 		debugTelemetry.Debugf("sent telemetry data")
 	}
