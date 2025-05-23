@@ -15,10 +15,11 @@ import (
 )
 
 type Stats struct {
-	AppName    string `json:"appName"`
-	AppVersion string `json:"appVersion"`
-	ClientId   string `json:"clientId"`
-	SessionId  string `json:"sessionId"`
+	AppName        string `json:"appName"`
+	AppVersion     string `json:"appVersion"`
+	ClientId       string `json:"clientId"`
+	SessionId      string `json:"sessionId"`
+	IsShuttingDown bool   `json:"isShuttingDown"`
 
 	RuntimeDuration int64 `json:"runtimeDuration"`
 
@@ -35,10 +36,11 @@ var debugTelemetry = debug.Extend("telemetry")
 
 func (s *Sev) SendTelemetry(targetUrl string, statistics map[string]interface{}, conf map[string]interface{}) {
 	stats := Stats{
-		AppName:    config.Config().AppName,
-		AppVersion: config.Config().AppVersion,
-		ClientId:   s.Client().Uuid,
-		SessionId:  s.Session(),
+		AppName:        config.Config().AppName,
+		AppVersion:     config.Config().AppVersion,
+		ClientId:       s.Client().Uuid,
+		SessionId:      s.Session(),
+		IsShuttingDown: s.isShuttingDown,
 
 		RuntimeDuration: time.Since(s.AppStartTime()).Milliseconds(),
 

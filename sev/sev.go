@@ -44,6 +44,8 @@ type Sev struct {
 
 	sigChannel chan os.Signal
 
+	isShuttingDown bool
+
 	ctx context.Context
 }
 
@@ -112,6 +114,8 @@ func New(name string, version string, dbPath string, port uint) *Sev {
 		gin:      ginInstance,
 		validate: &validate.Validate{},
 
+		isShuttingDown: false,
+
 		ctx: context.Background(),
 	}
 
@@ -160,6 +164,7 @@ func (s *Sev) RegisterSignalHook() {
 	go func() {
 		<-s.sigChannel
 		debug.Debug("received interrupt signal, running shutdown hooks")
+		s.isShuttingDown = true
 		s.Shutdown()
 	}()
 }
