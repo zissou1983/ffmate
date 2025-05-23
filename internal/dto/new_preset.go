@@ -12,4 +12,6 @@ type NewPreset struct {
 
 	Name        string `json:"name"`
 	Description string `json:"description"`
+
+	GlobalPresetName string `json:"globalPresetName"`
 }

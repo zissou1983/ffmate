@@ -61,6 +61,10 @@ func (s *presetSvc) NewPreset(newPreset *dto.NewPreset) (*model.Preset, error) {
 	w, err := s.presetRepository.Create(newPreset)
 	s.sev.Logger().Infof("created new preset (uuid: %s)", w.Uuid)
 
+	if newPreset.GlobalPresetName != "" {
+		s.sev.Metrics().GaugeVec("preset.global").WithLabelValues(newPreset.GlobalPresetName).Inc()
+	}
+
 	s.sev.Metrics().Gauge("preset.created").Inc()
 	WebhookService().Fire(dto.PRESET_CREATED, w.ToDto())
 	WebsocketService().Broadcast(PRESET_CREATED, w.ToDto())
@@ -86,6 +90,10 @@ func (s *presetSvc) UpdatePreset(presetUuid string, newPreset *dto.NewPreset) (*
 	if err != nil {
 		s.sev.Logger().Warnf("failed to update preset (uuid: %s): %+v", p.Uuid, err)
 		return nil, err
+	}
+
+	if newPreset.GlobalPresetName != "" {
+		s.sev.Metrics().GaugeVec("preset.global").WithLabelValues(newPreset.GlobalPresetName).Inc()
 	}
 
 	s.sev.Metrics().Gauge("preset.updated").Inc()

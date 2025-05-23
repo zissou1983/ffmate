@@ -61,6 +61,14 @@ var gaugesVec = map[string]*prometheus.GaugeVec{
 		},
 		[]string{"sidecarPath", "scriptPath"},
 	),
+	"preset.global": prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "preset_global",
+			Help:      "Number of global presets",
+		},
+		[]string{"name"},
+	),
 }
 
 type MetricsImpl interface {
