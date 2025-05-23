@@ -102,6 +102,14 @@ func start(cmd *cobra.Command, args []string) {
 		s.RegisterShutdownHook(func(s *sev.Sev) {
 			sendTelemetry(s, err == nil)
 		})
+		ticker := time.NewTicker(24 * time.Hour)
+		go func() {
+			for {
+				<-ticker.C
+				sendTelemetry(s, err == nil)
+			}
+		}()
+
 	}
 
 	internal.Init(s, config.Config().MaxConcurrentTasks, frontend)
