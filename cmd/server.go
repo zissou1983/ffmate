@@ -114,10 +114,15 @@ func start(cmd *cobra.Command, args []string) {
 
 	internal.Init(s, config.Config().MaxConcurrentTasks, frontend)
 
-	res, found, _ := updateAvailable()
-	if found {
-		s.Logger().Infof("found newer version %s (current: %s). Run '%s update' to update.", res, config.Config().AppVersion, config.Config().AppName)
-	}
+	ticker := time.NewTicker(1 * time.Hour)
+	go func() {
+		for {
+			<-ticker.C
+			monitorUpdateAvailable(s)
+		}
+	}()
+
+	monitorUpdateAvailable(s)
 
 	readyFunc := func() {
 		err := s.Start(config.Config().Port)
@@ -130,6 +135,13 @@ func start(cmd *cobra.Command, args []string) {
 		useSystray(s, readyFunc)
 	} else {
 		readyFunc()
+	}
+}
+
+func monitorUpdateAvailable(s *sev.Sev) {
+	res, found, _ := updateAvailable()
+	if found {
+		s.Logger().Infof("found newer version %s (current: %s). Run '%s update' to update.", res, config.Config().AppVersion, config.Config().AppName)
 	}
 }
 
@@ -172,7 +184,6 @@ func sendTelemetry(s *sev.Sev, isDocker bool) {
 }
 
 func useSystray(s *sev.Sev, readyFunc func()) {
-
 	s.RegisterShutdownHook(func(s *sev.Sev) {
 		systray.Quit()
 	})
