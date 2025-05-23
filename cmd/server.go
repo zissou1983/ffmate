@@ -100,41 +100,7 @@ func start(cmd *cobra.Command, args []string) {
 	if config.Config().SendTelemetry {
 		_, err := os.Stat("/.dockerenv")
 		s.RegisterShutdownHook(func(s *sev.Sev) {
-			taskRepo := &repository.Task{DB: s.DB()}
-			webhookRepo := &repository.Webhook{DB: s.DB()}
-			presetRepo := &repository.Preset{DB: s.DB()}
-			watchfolderRepo := &repository.Watchfolder{DB: s.DB()}
-			count, _ := taskRepo.Count()
-			countQueued, _ := taskRepo.CountByStatus(dto.QUEUED)
-			countRunning, _ := taskRepo.CountByStatus(dto.RUNNING)
-			countDoneSuccessful, _ := taskRepo.CountByStatus(dto.DONE_SUCCESSFUL)
-			countDoneFailed, _ := taskRepo.CountByStatus(dto.DONE_ERROR)
-			countDoneCanceled, _ := taskRepo.CountByStatus(dto.DONE_CANCELED)
-			countWebhooks, _ := webhookRepo.Count()
-			countPresets, _ := presetRepo.Count()
-			countWatchfolder, _ := watchfolderRepo.Count()
-			s.SendTelemetry(
-				"https://telemetry.ffmate.io",
-				map[string]interface{}{
-					"Tasks":               count,
-					"TasksQueued":         countQueued,
-					"TasksRunning":        countRunning,
-					"TasksDoneSuccessful": countDoneSuccessful,
-					"TasksDoneFailed":     countDoneFailed,
-					"TasksDoneCanceled":   countDoneCanceled,
-					"Webhooks":            countWebhooks,
-					"Presets":             countPresets,
-					"Watchfolder":         countWatchfolder,
-				},
-				map[string]interface{}{
-					"Tray":               config.Config().Tray,
-					"Port":               config.Config().Port,
-					"MaxConcurrentTasks": config.Config().MaxConcurrentTasks,
-					"Debug":              config.Config().Debug,
-					"Docker":             err == nil,
-					"AI":                 config.Config().AI != "",
-				},
-			)
+			sendTelemetry(s, err == nil)
 		})
 	}
 
@@ -157,6 +123,44 @@ func start(cmd *cobra.Command, args []string) {
 	} else {
 		readyFunc()
 	}
+}
+
+func sendTelemetry(s *sev.Sev, isDocker bool) {
+	taskRepo := &repository.Task{DB: s.DB()}
+	webhookRepo := &repository.Webhook{DB: s.DB()}
+	presetRepo := &repository.Preset{DB: s.DB()}
+	watchfolderRepo := &repository.Watchfolder{DB: s.DB()}
+	count, _ := taskRepo.Count()
+	countQueued, _ := taskRepo.CountByStatus(dto.QUEUED)
+	countRunning, _ := taskRepo.CountByStatus(dto.RUNNING)
+	countDoneSuccessful, _ := taskRepo.CountByStatus(dto.DONE_SUCCESSFUL)
+	countDoneFailed, _ := taskRepo.CountByStatus(dto.DONE_ERROR)
+	countDoneCanceled, _ := taskRepo.CountByStatus(dto.DONE_CANCELED)
+	countWebhooks, _ := webhookRepo.Count()
+	countPresets, _ := presetRepo.Count()
+	countWatchfolder, _ := watchfolderRepo.Count()
+	s.SendTelemetry(
+		"https://telemetry.ffmate.io",
+		map[string]interface{}{
+			"Tasks":               count,
+			"TasksQueued":         countQueued,
+			"TasksRunning":        countRunning,
+			"TasksDoneSuccessful": countDoneSuccessful,
+			"TasksDoneFailed":     countDoneFailed,
+			"TasksDoneCanceled":   countDoneCanceled,
+			"Webhooks":            countWebhooks,
+			"Presets":             countPresets,
+			"Watchfolder":         countWatchfolder,
+		},
+		map[string]interface{}{
+			"Tray":               config.Config().Tray,
+			"Port":               config.Config().Port,
+			"MaxConcurrentTasks": config.Config().MaxConcurrentTasks,
+			"Debug":              config.Config().Debug,
+			"Docker":             isDocker,
+			"AI":                 config.Config().AI != "",
+		},
+	)
 }
 
 func useSystray(s *sev.Sev, readyFunc func()) {
