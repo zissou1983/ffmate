@@ -32,7 +32,6 @@ func (s *watchfolderSvc) GetWatchfolderById(uuid string) (*model.Watchfolder, er
 func (s *watchfolderSvc) UpdateWatchfolderInternal(watchfolder *model.Watchfolder) (*model.Watchfolder, error) {
 	w, err := s.watchfolderRepository.Update(watchfolder)
 	if err == nil {
-		s.sev.Metrics().Gauge("watchfolder.updated").Inc()
 		WebhookService().Fire(dto.WATCHFOLDER_UPDATED, w.ToDto())
 		WebsocketService().Broadcast(WATCHFOLDER_UPDATED, w.ToDto())
 	}
@@ -95,8 +94,11 @@ func (s *watchfolderSvc) UpdateWatchfolder(watchfolderUuid string, newWatchfolde
 	w.GrowthChecks = newWatchfolder.GrowthChecks
 	w.Interval = newWatchfolder.Interval
 	w.Filter = newWatchfolder.Filter
+	w.Suspended = newWatchfolder.Suspended
 
 	watchfolderUpdates <- w
+
+	s.sev.Metrics().Gauge("watchfolder.updated").Inc()
 
 	return s.UpdateWatchfolderInternal(w)
 }

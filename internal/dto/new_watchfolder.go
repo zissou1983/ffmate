@@ -10,5 +10,7 @@ type NewWatchfolder struct {
 
 	Filter *WatchfolderFilter `json:"filter"`
 
+	Suspended bool `json:"suspended"`
+
 	Preset string `json:"preset"`
 }

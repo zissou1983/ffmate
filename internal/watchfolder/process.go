@@ -40,9 +40,11 @@ func (w *Watchfolder) Init() {
 	go w.monitorWatchfolderUpdates()
 
 	for _, watchfolder := range *watchfolders {
-		ctx, cancel := context.WithCancelCause(context.Background())
-		watchfolderCtx.Store(watchfolder.Uuid, cancel)
-		go w.process(&watchfolder, ctx)
+		if !watchfolder.Suspended && !watchfolder.DeletedAt.Valid {
+			ctx, cancel := context.WithCancelCause(context.Background())
+			watchfolderCtx.Store(watchfolder.Uuid, cancel)
+			go w.process(&watchfolder, ctx)
+		}
 	}
 }
 

@@ -61,7 +61,7 @@ func (m *Watchfolder) Create(newWatchfolder *dto.NewWatchfolder) (*model.Watchfo
 		Interval:     newWatchfolder.Interval,
 		Filter:       newWatchfolder.Filter,
 		GrowthChecks: newWatchfolder.GrowthChecks,
-		Suspended:    false,
+		Suspended:    newWatchfolder.Suspended,
 	}
 	db := m.DB.Create(watchfolder)
 	return watchfolder, db.Error
