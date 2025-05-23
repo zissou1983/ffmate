@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 	"time"
 
@@ -143,6 +144,11 @@ func (q *Queue) processTask(task *model.Task, ctx context.Context, doneFunc func
 
 func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProcessing, processorType string) error {
 	if processor != nil && (processor.SidecarPath != nil || processor.ScriptPath != nil) {
+		if processorType == "pre" {
+			q.Sev.Metrics().GaugeVec("task.preProcessing").WithLabelValues(strconv.FormatBool(processor.SidecarPath != nil && processor.SidecarPath.Raw == ""), strconv.FormatBool(processor.ScriptPath != nil && processor.ScriptPath.Raw == "")).Inc()
+		} else {
+			q.Sev.Metrics().GaugeVec("task.postProcessing").WithLabelValues(strconv.FormatBool(processor.SidecarPath != nil && processor.SidecarPath.Raw == ""), strconv.FormatBool(processor.ScriptPath != nil && processor.ScriptPath.Raw == "")).Inc()
+		}
 		q.Sev.Logger().Infof("starting %sProcessing (uuid: %s)", processorType, task.Uuid)
 		processor.StartedAt = time.Now().UnixMilli()
 		if processorType == "pre" {

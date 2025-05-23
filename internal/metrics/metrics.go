@@ -45,6 +45,22 @@ var gaugesVec = map[string]*prometheus.GaugeVec{
 		},
 		[]string{"url", "screen", "language"},
 	),
+	"task.preProcessing": prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "task_preProcessing",
+			Help:      "Number of preProcessing",
+		},
+		[]string{"sidecarPath", "scriptPath"},
+	),
+	"task.postProcessing": prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: namespace,
+			Name:      "task_postProcessing",
+			Help:      "Number of postProcessing",
+		},
+		[]string{"sidecarPath", "scriptPath"},
+	),
 }
 
 type MetricsImpl interface {
