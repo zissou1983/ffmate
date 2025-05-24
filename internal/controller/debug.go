@@ -26,7 +26,7 @@ func (v *DebugController) Setup(s *sev.Sev) {
 // @Router /debug/namespace [delete]
 func (v *DebugController) setDebug(gin *gin.Context) {
 	ns := gin.Param("namespaces")
-	debugo.SetDebug(ns)
+	debugo.SetNamespace(ns)
 	if gin.Request.Method == "DELETE" {
 		v.sev.Logger().Info("disabled debug logging")
 	} else {
@@ -43,7 +43,7 @@ func (v *DebugController) setDebug(gin *gin.Context) {
 // @Router /debug/namespace [delete]
 func (v *DebugController) disableDebug(gin *gin.Context) {
 	ns := gin.Param("namespaces")
-	debugo.SetDebug(ns)
+	debugo.SetNamespace(ns)
 	if gin.Request.Method == "DELETE" {
 		v.sev.Logger().Info("disabled debug logging")
 	} else {

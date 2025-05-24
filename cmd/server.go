@@ -219,7 +219,7 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 		if found {
 			mUpdate.SetTitle(fmt.Sprintf("Update available: %s", res))
 		}
-		mDebug := systray.AddMenuItemCheckbox("Enable debug", "Toggle debug", debugo.GetDebug() != "")
+		mDebug := systray.AddMenuItemCheckbox("Enable debug", "Toggle debug", debugo.GetNamespace() != "")
 
 		systray.AddSeparator()
 
@@ -259,10 +259,10 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 					}
 				case <-mDebug.ClickedCh:
 					if mDebug.Checked() {
-						debugo.SetDebug("")
+						debugo.SetNamespace("")
 						mDebug.Uncheck()
 					} else {
-						debugo.SetDebug("*")
+						debugo.SetNamespace("*")
 						mDebug.Check()
 					}
 				case <-mUpdate.ClickedCh:

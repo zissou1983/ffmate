@@ -37,7 +37,7 @@ func Execute(args []string, frontendFs embed.FS) {
 	config.Init()
 
 	if config.Config().Debug != "" {
-		debugo.SetDebug(config.Config().Debug)
+		debugo.SetNamespace(config.Config().Debug)
 	}
 
 	if err := rootCmd.Execute(); err != nil {
