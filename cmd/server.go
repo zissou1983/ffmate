@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+
 	"regexp"
 	"runtime"
 	"time"
@@ -43,7 +44,11 @@ func init() {
 	serverCmd.PersistentFlags().StringP("ffmpeg", "f", "ffmpeg", "path to ffmpeg binary")
 	serverCmd.PersistentFlags().StringP("port", "p", "3000", "the port to listen to")
 	serverCmd.PersistentFlags().BoolP("tray", "t", false, "start with tray menu (experimental)")
-	serverCmd.PersistentFlags().StringP("database", "b", "~/.ffmate/db.sqlite", "the path do the database")
+	if runtime.GOOS == "windows" {
+		serverCmd.PersistentFlags().StringP("database", "b", "%APPDATA%\\ffmate\\db.sql", "the path do the database")
+	} else {
+		serverCmd.PersistentFlags().StringP("database", "b", "~/.ffmate/db.sqlite", "the path do the database")
+	}
 	serverCmd.PersistentFlags().UintP("max-concurrent-tasks", "m", 3, "define maximum concurrent running tasks")
 	serverCmd.PersistentFlags().StringP("ai", "", "", "ai vendor:model:key")
 	serverCmd.PersistentFlags().BoolP("send-telemetry", "s", true, "enable sending anonymous telemetry data")

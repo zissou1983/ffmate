@@ -1,6 +1,7 @@
 package wildcards
 
 import (
+	"fmt"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -10,14 +11,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func Replace(input string, inputFile string, outputFile string, source string, escapePaths bool) string {
-	if escapePaths && runtime.GOOS != "windows" {
-		inputFile = strings.ReplaceAll(inputFile, " ", "\\ ")
-		outputFile = strings.ReplaceAll(outputFile, " ", "\\ ")
-	}
-
-	input = strings.ReplaceAll(input, "${INPUT_FILE}", inputFile)
-	input = strings.ReplaceAll(input, "${OUTPUT_FILE}", outputFile)
+func Replace(input string, inputFile string, outputFile string, source string) string {
+	input = strings.ReplaceAll(input, "${INPUT_FILE}", fmt.Sprintf("\"%s\"", inputFile))
+	input = strings.ReplaceAll(input, "${OUTPUT_FILE}", fmt.Sprintf("\"%s\"", outputFile))
 	input = strings.ReplaceAll(input, "${INPUT_FILE_BASE}", filepath.Base(inputFile))
 	input = strings.ReplaceAll(input, "${OUTPUT_FILE_BASE}", filepath.Base(inputFile))
 	input = strings.ReplaceAll(input, "${INPUT_FILE_EXTENSION}", filepath.Ext(filepath.Base(inputFile)))

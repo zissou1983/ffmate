@@ -76,6 +76,9 @@ func New(name string, version string, dbPath string, port uint) *Sev {
 	if strings.HasPrefix(dbPath, "~") {
 		dbPath = filepath.Join(os.Getenv("HOME"), dbPath[1:])
 	}
+	if strings.HasPrefix(dbPath, "%APPDATA%") {
+		dbPath = strings.ReplaceAll(dbPath, "%APPDATA%", os.Getenv("APPDATA"))
+	}
 	if err := os.MkdirAll(filepath.Dir(dbPath), os.ModePerm); err != nil {
 		logger.Errorf("failed to create database folder (path: %s): %v", filepath.Dir(dbPath), err)
 		os.Exit(1)

@@ -8,6 +8,7 @@ import (
 	"math"
 	"os/exec"
 	"regexp"
+	"runtime"
 
 	"github.com/mattn/go-shellwords"
 	"github.com/welovemedia/ffmate/internal/config"
@@ -18,7 +19,13 @@ var debug = debugo.New("ffmpeg")
 
 // ExecuteFFmpeg runs the ffmpeg command, provides progress updates, and checks the result
 func Execute(request *ExecutionRequest) error {
-	args, err := shellwords.NewParser().Parse(request.Command)
+	var args []string
+	var err error
+	if runtime.GOOS == "windows" {
+		args, err = shellwordsUnicodeSafe(request.Command)
+	} else {
+		args, err = shellwords.NewParser().Parse(request.Command)
+	}
 	if err != nil {
 		return fmt.Errorf("FFMPEG - failed to parse command: %v", err)
 	}

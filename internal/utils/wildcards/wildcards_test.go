@@ -14,15 +14,15 @@ func TestReplace(t *testing.T) {
 		source      string
 		escapePaths bool
 		want        string
+		wantWin     string
 	}{
 		{
-			name:        "File paths with spaces",
-			input:       "${INPUT_FILE} to ${OUTPUT_FILE}",
-			inputFile:   "/path/to/input file.mp4",
-			outputFile:  "/path/to/output file.mp4",
-			source:      "test",
-			escapePaths: true,
-			want:        "/path/to/input\\ file.mp4 to /path/to/output\\ file.mp4",
+			name:       "File paths with spaces",
+			input:      "${INPUT_FILE} to ${OUTPUT_FILE}",
+			inputFile:  "/path/to/input file.mp4",
+			outputFile: "/path/to/output file.mp4",
+			source:     "test",
+			want:       "\"/path/to/input file.mp4\" to \"/path/to/output file.mp4\"",
 		},
 		{
 			name:       "File components",
@@ -31,6 +31,7 @@ func TestReplace(t *testing.T) {
 			outputFile: "/path/to/output.mp4",
 			source:     "test",
 			want:       "input.mp4 .mp4 input /path/to",
+			wantWin:    "input.mp4 .mp4 input \\path\\to",
 		},
 		{
 			name:       "System info",
@@ -42,11 +43,17 @@ func TestReplace(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for index, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Replace(tt.input, tt.inputFile, tt.outputFile, tt.source, tt.escapePaths)
-			if got != tt.want {
-				t.Errorf("Replace() = %v, want %v", got, tt.want)
+			got := Replace(tt.input, tt.inputFile, tt.outputFile, tt.source)
+			var want = tt.want
+			if runtime.GOOS == "windows" {
+				if tt.wantWin != "" {
+					want = tt.wantWin
+				}
+			}
+			if got != want {
+				t.Errorf("Replace() = %v, want %v (index: %d)", got, tt.want, index)
 			}
 		})
 	}

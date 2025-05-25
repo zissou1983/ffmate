@@ -91,11 +91,11 @@ func (q *Queue) processTask(task *model.Task, ctx context.Context, doneFunc func
 	}
 
 	// resolve wildcards
-	inFile := wildcards.Replace(task.InputFile.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source, false)
-	outFile := wildcards.Replace(task.OutputFile.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source, false)
+	inFile := wildcards.Replace(task.InputFile.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source)
+	outFile := wildcards.Replace(task.OutputFile.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source)
 	task.InputFile.Resolved = inFile
 	task.OutputFile.Resolved = outFile
-	task.Command.Resolved = wildcards.Replace(task.Command.Raw, inFile, outFile, task.Source, true)
+	task.Command.Resolved = wildcards.Replace(task.Command.Raw, inFile, outFile, task.Source)
 	task.Status = dto.RUNNING
 	q.updateTask(task)
 
@@ -163,9 +163,9 @@ func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProce
 				q.Sev.Logger().Errorf("failed to marshal task to write sidecar file: %v", err)
 			} else {
 				if processorType == "pre" {
-					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source, false)
+					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source)
 				} else {
-					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, task.Source, false)
+					processor.SidecarPath.Resolved = wildcards.Replace(processor.SidecarPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, task.Source)
 				}
 				q.updateTask(task)
 				err = os.WriteFile(processor.SidecarPath.Resolved, b, 0644)
@@ -180,9 +180,9 @@ func (q *Queue) prePostProcessTask(task *model.Task, processor *dto.PrePostProce
 
 		if processor.Error == "" && processor.ScriptPath != nil && processor.ScriptPath.Raw != "" {
 			if processorType == "pre" {
-				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source, true)
+				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Raw, task.OutputFile.Raw, task.Source)
 			} else {
-				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, task.Source, true)
+				processor.ScriptPath.Resolved = wildcards.Replace(processor.ScriptPath.Raw, task.InputFile.Resolved, task.OutputFile.Resolved, task.Source)
 			}
 			q.updateTask(task)
 			args, err := shellwords.NewParser().Parse(processor.ScriptPath.Resolved)
