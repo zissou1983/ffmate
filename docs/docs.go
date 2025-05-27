@@ -42,6 +42,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/client": {
+            "get": {
+                "description": "Get Client configuration",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client"
+                ],
+                "summary": "Get Client configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.Client"
+                        }
+                    }
+                }
+            }
+        },
         "/debug/namespace": {
             "delete": {
                 "description": "Turn debugging off",
@@ -714,6 +734,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.Client": {
+            "type": "object",
+            "properties": {
+                "arch": {
+                    "type": "string"
+                },
+                "os": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.InterfaceMap": {
             "type": "object",
             "additionalProperties": true
@@ -736,6 +770,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "globalPresetName": {
                     "type": "string"
                 },
                 "name": {
@@ -815,6 +852,9 @@ const docTemplate = `{
                 },
                 "preset": {
                     "type": "string"
+                },
+                "suspended": {
+                    "type": "boolean"
                 }
             }
         },
