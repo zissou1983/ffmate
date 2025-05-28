@@ -2,8 +2,8 @@ name: Cross-platform cgo Build and Release
 
 on:
   push:
-    tags:
-      - '**'
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -102,6 +102,12 @@ jobs:
         with:
           name: ffmate-frontend
           path: ui-build
+
+      - name: Read .version
+        id: dockertag
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: .version
 
       - name: Install cross-compiler (Linux only)
         if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
@@ -217,6 +223,12 @@ jobs:
         with:
           path: dist
 
+      - name: Read .version
+        id: dockertag
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: .version
+
       - name: Prepare update for build
         run: |
           rm -rf _bin
@@ -233,16 +245,16 @@ jobs:
 
       - name: Build docker images
         run: |
-          docker buildx build -f Dockerfile.amd64 -t ghcr.io/welovemedia/ffmate:${github.ref_name}-amd64 --platform linux/amd64 --load .
-          docker buildx build -f Dockerfile.arm64 -t ghcr.io/welovemedia/ffmate:${github.ref_name}-arm64 --platform linux/arm64 --load .
-          docker push ghcr.io/welovemedia/ffmate:${github.ref_name}-amd64
-          docker push ghcr.io/welovemedia/ffmate:${github.ref_name}-arm64
+          docker buildx build -f Dockerfile.amd64 -t ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}-amd64 --platform linux/amd64 --load .
+          docker buildx build -f Dockerfile.arm64 -t ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}-arm64 --platform linux/arm64 --load .
+          docker push ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}-amd64
+          docker push ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}-arm64
 
       - name: Build docker manifests
         run: |
-          docker manifest create ghcr.io/welovemedia/ffmate:${github.ref_name} --amend ghcr.io/welovemedia/ffmate:${github.ref_name}-amd64 ghcr.io/welovemedia/ffmate:${github.ref_name}-arm64
-          docker manifest create ghcr.io/welovemedia/ffmate:latest --amend ghcr.io/welovemedia/ffmate:${github.ref_name}-amd64 ghcr.io/welovemedia/ffmate:${github.ref_name}-arm64
-          docker manifest push ghcr.io/welovemedia/ffmate:${github.ref_name}
+          docker manifest create ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }} --amend ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}-amd64 ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}-arm64
+          docker manifest create ghcr.io/welovemedia/ffmate:latest --amend ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}-amd64 ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}-arm64
+          docker manifest push ghcr.io/welovemedia/ffmate:${{ steps.dockertag.outputs.content }}
           docker manifest push ghcr.io/welovemedia/ffmate:latest
 
   release:
@@ -255,6 +267,12 @@ jobs:
 
       - name: Install unzip
         run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - name: Read .version
+        id: dockertag
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: .version
 
       - uses: geekyeggo/delete-artifact@v5
         with:
@@ -282,7 +300,7 @@ jobs:
       - name: Execute go-selfupdate
         run: |
           rm -rf _update
-          ${GOPATH:-$HOME/go}/bin/go-selfupdate -o=_update/ffmate _bin/ ${github.ref_name}
+          ${GOPATH:-$HOME/go}/bin/go-selfupdate -o=_update/ffmate _bin/ ${{ steps.dockertag.outputs.content }}
 
       - name: Upload update binaries to S3
         uses: jakejarvis/s3-sync-action@master
