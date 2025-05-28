@@ -75,7 +75,7 @@ jobs:
     continue-on-error: false
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.os }}
 
