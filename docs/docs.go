@@ -44,14 +44,14 @@ const docTemplate = `{
         },
         "/client": {
             "get": {
-                "description": "Get Client configuration",
+                "description": "Get Client info",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "client"
                 ],
-                "summary": "Get Client configuration",
+                "summary": "Get Client info",
                 "responses": {
                     "200": {
                         "description": "OK",
