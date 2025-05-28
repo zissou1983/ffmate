@@ -16,7 +16,7 @@ func setupTaskTestDB(t *testing.T) (*gorm.DB, *sev.Sev) {
 		t.Fatalf("Failed to open test database: %v", err)
 	}
 
-	err = db.AutoMigrate(&model.Task{})
+	err = db.AutoMigrate(&model.Task{}, &model.Webhook{})
 	if err != nil {
 		t.Fatalf("Failed to migrate test database: %v", err)
 	}

@@ -116,7 +116,7 @@ func TestWatchfolderService(t *testing.T) {
 		}
 
 		_, err = WatchfolderService().GetWatchfolderById(wf.Uuid)
-		if err != nil {
+		if err == nil {
 			t.Error("Expected no error when requesting deleted watchfolder")
 		}
 	})
