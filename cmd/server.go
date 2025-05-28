@@ -208,7 +208,12 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 	})
 
 	systray.Run(func() {
-		systray.SetIcon(iconDataW)
+		if runtime.GOOS == "windows" {
+			systray.SetIcon(iconDataC)
+		} else {
+			systray.SetIcon(iconDataW)
+		}
+
 		systray.SetTooltip(fmt.Sprintf("ffmate %s", config.Config().AppVersion))
 
 		mFFmate := systray.AddMenuItem(fmt.Sprintf("ffmate %s", config.Config().AppVersion), "")
@@ -256,7 +261,11 @@ func useSystray(s *sev.Sev, readyFunc func()) {
 				if r > 0 {
 					systray.SetIcon(iconDataC)
 				} else {
-					systray.SetIcon(iconDataW)
+					if runtime.GOOS == "windows" {
+						systray.SetIcon(iconDataC)
+					} else {
+						systray.SetIcon(iconDataW)
+					}
 				}
 
 				time.Sleep(1 * time.Second)
