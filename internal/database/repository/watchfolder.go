@@ -41,6 +41,12 @@ func (m *Watchfolder) Count() (int64, error) {
 	return count, db.Error
 }
 
+func (m *Watchfolder) CountDeleted() (int64, error) {
+	var count int64
+	db := m.DB.Unscoped().Model(&model.Watchfolder{}).Where("deleted_at IS NOT NULL").Count(&count)
+	return count, db.Error
+}
+
 func (m *Watchfolder) Delete(w *model.Watchfolder) error {
 	m.DB.Delete(w)
 	return m.DB.Error

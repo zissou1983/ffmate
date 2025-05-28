@@ -64,3 +64,9 @@ func (m *Preset) Count() (int64, error) {
 	db := m.DB.Model(&model.Preset{}).Count(&count)
 	return count, db.Error
 }
+
+func (m *Preset) CountDeleted() (int64, error) {
+	var count int64
+	db := m.DB.Unscoped().Model(&model.Preset{}).Where("deleted_at IS NOT NULL").Count(&count)
+	return count, db.Error
+}

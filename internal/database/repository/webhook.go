@@ -34,6 +34,12 @@ func (m *Webhook) Count() (int64, error) {
 	return count, db.Error
 }
 
+func (m *Webhook) CountDeleted() (int64, error) {
+	var count int64
+	db := m.DB.Unscoped().Model(&model.Webhook{}).Where("deleted_at IS NOT NULL").Count(&count)
+	return count, db.Error
+}
+
 func (m *Webhook) Delete(w *model.Webhook) error {
 	m.DB.Delete(w)
 	return m.DB.Error
