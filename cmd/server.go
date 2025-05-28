@@ -100,7 +100,7 @@ func start(cmd *cobra.Command, args []string) {
 	})
 
 	s.RegisterStartupHook(func(s *sev.Sev) {
-		s.Logger().Infof("server is listening on 0.0.0.0:%d", config.Config().Port)
+		s.Logger().Infof("server is listening on 0.0.0.0:%d (version: %s)", config.Config().Port, config.Config().AppVersion)
 	})
 	if config.Config().SendTelemetry {
 		_, err := os.Stat("/.dockerenv")
