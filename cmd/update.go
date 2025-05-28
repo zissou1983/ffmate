@@ -51,6 +51,10 @@ func checkForUpdate(force bool) (string, bool, error) {
 		return "no newer version found", false, nil
 	}
 
+	if dry && !force {
+		return fmt.Sprintf("found newer version: %s\n", res), false, nil
+	}
+
 	if !dry || force {
 		err = updater.Update()
 		if err != nil {
