@@ -62,18 +62,14 @@ func (q *Queue) Init() {
 		}
 	}()
 	go func() {
-		for {
-			select {
-			case t := <-service.TaskService().GetTaskUpdates():
-				taskMu.Lock()
-				if fn, ok := taskCtx[t.Uuid]; ok {
-					fn(errors.New("task canceled by user"))
-				} else {
-					q.Sev.Logger().Warnf("task not found to cancel (uuid: %s)", t.Uuid)
-				}
-				taskMu.Unlock()
-			default:
+		for t := range service.TaskService().GetTaskUpdates() {
+			taskMu.Lock()
+			if fn, ok := taskCtx[t.Uuid]; ok {
+				fn(errors.New("task canceled by user"))
+			} else {
+				q.Sev.Logger().Warnf("task not found to cancel (uuid: %s)", t.Uuid)
 			}
+			taskMu.Unlock()
 		}
 	}()
 }
