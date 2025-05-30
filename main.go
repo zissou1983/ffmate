@@ -1,37 +1,38 @@
 package main
 
 import (
-	"fmt"
+	"embed"
+	_ "embed"
 	"os"
 
-	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/welovemedia/ffmate/cmd"
+	"github.com/welovemedia/ffmate/docs"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "ffmate",
-	Short: "FFmate - A modern automation layer for FFmpeg",
-	Long: `FFmate is a modern and powerful automation layer built on top of FFmpeg.
-It provides REST API, Web UI, Webhooks, and more for video/audio transcoding.`,
-}
+//go:embed .version
+var version string
 
-var serverCmd = &cobra.Command{
-	Use:   "server",
-	Short: "Start the FFmate server",
-	Long:  `Start the FFmate server with REST API and Web UI`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Starting FFmate server...")
-		fmt.Println("API will be available at http://localhost:3000")
-		// TODO: Implement server startup logic
-	},
-}
+//go:embed all:ui-build/*
+var frontend embed.FS
 
-func init() {
-	rootCmd.AddCommand(serverCmd)
-}
+// @title ffmate API
+// @version
+// @description	A wrapper around ffmpeg
 
+// @contact.name We love media
+// @contact.email sev@welovemedia.io
+
+// @license.name AGPL-3.0
+// @license.url https://opensource.org/license/agpl-v3
+
+// @host localhost
+// @BasePath /api/v1
 func main() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	viper.Set("appName", "ffmate")
+	viper.Set("appVersion", version)
+
+	docs.SwaggerInfo.Schemes = []string{"http"}
+
+	cmd.Execute(os.Args, frontend)
 }
